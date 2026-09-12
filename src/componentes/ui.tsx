@@ -28,6 +28,14 @@ export function Pantalla({
   );
 }
 
+export function NoEncontrado({ volver }: { volver: string }) {
+  return (
+    <Pantalla titulo="No encontrado" volver={volver}>
+      <p className="vacio">Eso ya no existe. Puede que se haya borrado.</p>
+    </Pantalla>
+  );
+}
+
 export function Aviso({ alerta = false, children }: { alerta?: boolean; children: ReactNode }) {
   return <p className={alerta ? 'aviso aviso-alerta' : 'aviso'}>{children}</p>;
 }

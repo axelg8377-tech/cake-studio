@@ -5,7 +5,14 @@ import FichaIngrediente from './pantallas/FichaIngrediente';
 import FormIngrediente from './pantallas/FormIngrediente';
 import Ingredientes from './pantallas/Ingredientes';
 import Inicio from './pantallas/Inicio';
-import { Mas, Tortas } from './pantallas/Pendientes';
+import Constructor from './pantallas/Constructor';
+import { FormGasto, Gastos } from './pantallas/Gastos';
+import Mas from './pantallas/Mas';
+import { FormOpcion, Opciones } from './pantallas/Opciones';
+import { FormTamano, Tamanos } from './pantallas/Tamanos';
+
+/** "nuevo" → alta (sin id); un número → edición. */
+const idDe = (parte: string) => (parte === 'nuevo' ? undefined : Number(parte));
 
 function Contenido({ ruta }: { ruta: string[] }) {
   const [seccion, id, accion] = ruta;
@@ -15,9 +22,14 @@ function Contenido({ ruta }: { ruta: string[] }) {
     if (id) return <FichaIngrediente key={id} id={Number(id)} />;
     return <Ingredientes />;
   }
-  if (seccion === 'tortas') return <Tortas />;
+  if (seccion === 'tortas') return <Constructor />;
   if (seccion === 'flyer') return <PruebaFlyer />;
-  if (seccion === 'mas') return <Mas />;
+  if (seccion === 'mas') {
+    if (id === 'gastos') return accion ? <FormGasto key={accion} id={idDe(accion)} /> : <Gastos />;
+    if (id === 'tamanos') return accion ? <FormTamano key={accion} id={idDe(accion)} /> : <Tamanos />;
+    if (id === 'opciones') return accion ? <FormOpcion key={accion} id={idDe(accion)} /> : <Opciones />;
+    return <Mas />;
+  }
   return <Inicio />;
 }
 

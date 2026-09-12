@@ -69,6 +69,28 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
 - `npm test` 38/38 · build limpio. Publicado con OK del CEO.
 - **Próximo:** T7 (gastos, tamaños, opciones con receta) → T8 (constructor de torta).
 
+## Sesión 2 — 2026-09-12 (Opus) · T7 y T8 hechos, sin commitear
+
+- `datos/catalogo.ts`: `leerCatalogo`, alta/edición/borrado de gastos, tamaños y opciones, `guardarTorta`
+  (congela el snapshot; "realizada" descuenta stock sin bajar de 0).
+  - Borrar un gasto que usa una opción: bloqueado. El último tamaño: bloqueado. Borrar una opción: se permite,
+    las tortas guardadas tienen su costo congelado.
+  - Pasar una opción a precio fijo le borra la receta (no queda escondida).
+- T7: `pantallas/Mas.tsx` (entra a Opciones, Tamaños, Gastos; lo demás figura como próximo), `Gastos.tsx`,
+  `Tamanos.tsx`, `Opciones.tsx`. La lista de opciones muestra el costo al lado, para el molde de factor 1.
+  El formulario de opción ofrece solo los gastos que **no** son "de cada torta", para no cobrarlos dos veces.
+- T8: `pantallas/Constructor.tsx` en la pestaña Tortas. Chips por paso con el costo al tamaño elegido,
+  ganancia % editable (arranca en `margenDefecto`), precio final opcional, detalle del costo, aviso de stock,
+  "Guardar borrador" / "Ya la hice" (confirma antes de descontar stock), últimas 5 guardadas. Barra fija con
+  costo (tinta), ganancia (verde, rojo si es pérdida) y precio (terracota).
+- `Pendientes.tsx` borrado; `NoEncontrado` pasó a `componentes/ui.tsx`.
+- Verificación: `npm test` 45/45 (7 nuevos en `datos/catalogo.test.ts`, incluida la cuenta a mano de
+  vainilla + dulce de leche + ganache en 20 cm = $13.826,76 → sugerido $20.800). `npm run build` limpio.
+  En `vite preview` a 412 px: el constructor muestra costo $13.827 y precio $20.800 con esa torta; guardar un
+  borrador con precio final $25.000 lo lista en "Últimas guardadas". Capturas revisadas a ojo.
+- **No verificado:** en Android real, y "Ya la hice" descontando stock desde la pantalla (sí está en test).
+- **Falta:** commit + push con OK del CEO. Próximo: sesión 3 (T9 galería, T10 plantillas, T11 flyer).
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

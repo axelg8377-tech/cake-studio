@@ -220,6 +220,70 @@ tbody tr:last-child td { border-bottom: 0; }
 th { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); }
 .num { text-align: right; }
 
+/* ── Elegir opciones (constructor y formularios) ── */
+fieldset { margin: 0; min-width: 0; }
+fieldset.paso { padding: 0; border: 0; }
+.paso { display: grid; gap: 8px; }
+.rotulo small { font-weight: 400; letter-spacing: 0; text-transform: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 48px;
+  padding: 6px 14px;
+  border: 1px solid var(--detalle);
+  border-radius: var(--radio);
+  background: #FFFFFF;
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 600;
+  display: grid;
+  align-content: center;
+  text-align: left;
+  cursor: pointer;
+}
+.chip small { font-weight: 400; color: var(--suave); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+.chip[aria-pressed="true"] small { color: var(--detalle); }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; }
+.check input { width: 22px; height: 22px; min-height: 0; margin: 0; accent-color: var(--acento); }
+.linea-receta { display: grid; grid-template-columns: 1fr 5.5rem 1.5rem 44px; gap: 8px; align-items: center; }
+.unidad { color: var(--suave); font-size: 14px; }
+.boton-quitar {
+  min-height: 48px;
+  border: 1px solid var(--detalle);
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--sube);
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+.costo-opcion { margin: 0; font-size: 18px; }
+.costo-opcion b { font-family: var(--titulos); font-size: 24px; color: var(--acento); }
+.boton:disabled { opacity: .6; }
+details summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+
+/* Costo, ganancia y precio con colores distintos, fijos arriba de la barra de navegación. */
+.resumen {
+  position: sticky;
+  bottom: calc(68px + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--superficie);
+  border: 1px solid var(--detalle);
+  border-radius: var(--radio);
+  box-shadow: 0 6px 20px rgb(59 42 34 / .14);
+}
+.resumen > div { padding: 8px 10px; display: grid; align-content: start; }
+.resumen > div + div { border-left: 1px solid var(--linea); }
+.resumen span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); }
+.resumen b { font-family: var(--titulos); font-size: 20px; line-height: 1.2; font-variant-numeric: lining-nums tabular-nums; }
+.resumen small { font-size: 12px; color: var(--suave); }
+.c-costo { color: var(--tinta); }
+.c-ganancia { color: var(--baja); }
+.c-perdida { color: var(--sube); }
+.c-precio { color: var(--acento); }
+
 /* ── Navegación inferior ── */
 .nav {
   position: fixed;
