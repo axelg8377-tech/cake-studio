@@ -22,6 +22,15 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
   - **Falta la verificación que define T1:** abrir en un Android real, generar, compartir a WhatsApp, y
     escanear el QR. Eso lo hace el CEO; sin eso T1 no está cerrado.
 
+### Publicación
+- Repo: https://github.com/axelg8377-tech/cake-studio · Sitio: https://axelg8377-tech.github.io/cake-studio/
+- **Público:** el CEO pidió privado "si se puede"; GitHub respondió 422 "Your current plan does not
+  support GitHub Pages for this repository". Antes de abrirlo se sacó de PLAN.md una ruta a un archivo
+  con credenciales y se reescribió el único commit.
+- Workflow `pages.yml`: `npm test` antes de publicar, permisos mínimos (CICD-01), acciones por SHA
+  (CICD-03). Primer deploy verde. Aviso de GitHub: esas acciones apuntan a Node 20 (deprecado) y corren
+  forzadas en Node 24; actualizar los SHA a versiones nuevas cuando haga falta.
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.
