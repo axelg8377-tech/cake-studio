@@ -3,7 +3,7 @@ import { ALTO, ANCHO, flyerElegante } from './flyer/plantillas/elegante';
 import { svgQrMarca } from './flyer/qrMarca';
 import { PALETA_PAPEL } from './flyer/svg';
 import { compartirOBajar, fotoDataUri, fuenteDataUri, svgAPng } from './lib/exportar';
-import { urlWhatsApp } from './lib/whatsapp';
+import { MENSAJE_QR, urlWhatsApp } from './lib/whatsapp';
 
 /**
  * T1 del PLAN.md: prueba del riesgo técnico #1. Un flyer real → PNG → menú de compartir de Android.
@@ -22,7 +22,7 @@ export default function PruebaFlyer() {
   }, []);
 
   const svg = useMemo(() => {
-    const url = urlWhatsApp(telefono) ?? 'https://wa.me/';
+    const url = urlWhatsApp(telefono, MENSAJE_QR) ?? 'https://wa.me/';
     return flyerElegante(
       {
         nombre,
@@ -60,7 +60,7 @@ export default function PruebaFlyer() {
 
   return (
     <main className="prueba">
-      <h1>Prueba de flyer</h1>
+      <h1>Flyer</h1>
       <label>
         Nombre de la torta
         <input value={nombre} onChange={(e) => setNombre(e.target.value)} />

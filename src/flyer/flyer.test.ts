@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import jsQR from 'jsqr';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
-import { normalizarTelefonoAR, urlWhatsApp } from '../lib/whatsapp';
+import { MENSAJE_QR, normalizarTelefonoAR, urlWhatsApp } from '../lib/whatsapp';
 import { ALTO, ANCHO, flyerElegante, type DatosFlyer } from './plantillas/elegante';
 import { svgQrMarca } from './qrMarca';
 import { PALETA_PAPEL } from './svg';
@@ -15,6 +15,8 @@ const DATOS: DatosFlyer = {
     { etiqueta: 'Relleno', valor: 'Dulce de leche + crema' },
     { etiqueta: 'Cobertura', valor: 'Ganache' },
     { etiqueta: 'Decoración', valor: 'Frutillas y chocolate' },
+    // Cinco datos = tres filas en la primera columna: el caso más apretado del pie.
+    { etiqueta: 'Extras', valor: 'Velas y caja especial' },
   ],
   precio: 25000,
   negocio: { nombre: 'Dulce Hogar', telefono: '11 2345-6789', instagram: 'dulcehogar' },
@@ -26,7 +28,7 @@ async function leerQR(png: Buffer): Promise<string | null> {
 }
 
 async function flyerPng(foto: boolean): Promise<{ svg: string; png: Buffer; url: string }> {
-  const url = urlWhatsApp(DATOS.negocio.telefono)!;
+  const url = urlWhatsApp(DATOS.negocio.telefono, MENSAJE_QR)!;
   const fotoDataUri = foto
     ? `data:image/jpeg;base64,${(
         await sharp({ create: { width: 1200, height: 900, channels: 3, background: '#6b3f2a' } })
@@ -82,11 +84,14 @@ describe('flyer elegante', () => {
     expect(await leerQR(comprimido)).toBe(url);
   });
 
-  it('el QR se lee con el flyer achicado a la mitad, como en la pantalla de un celular', async () => {
-    const { png, url } = await flyerPng(true);
-    const enPantalla = await sharp(png).resize(540).jpeg({ quality: 70 }).toBuffer();
-    expect(await leerQR(enPantalla)).toBe(url);
-  });
+  it.each([540, 480])(
+    'el QR con mensaje se lee con el flyer achicado a %i px, como en la pantalla de un celular',
+    async (ancho) => {
+      const { png, url } = await flyerPng(true);
+      const enPantalla = await sharp(png).resize(ancho).jpeg({ quality: 70 }).toBuffer();
+      expect(await leerQR(enPantalla)).toBe(url);
+    },
+  );
 
   it('sin foto también se dibuja y el QR se lee', async () => {
     const { png, url } = await flyerPng(false);

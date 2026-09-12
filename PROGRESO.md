@@ -51,6 +51,24 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
 - **T0 de spec-kit sin completar a propósito:** el CEO pidió avanzar directo. PLAN.md + este archivo
   son la especificación.
 
+### Cierre de la sesión 1 (sin commitear, esperando OK del CEO)
+- CEO reescaneó: el QR sin mensaje abre el chat. Pidió recuperar el mensaje.
+- Ahora el QR lleva `MENSAJE_QR = 'Hola! Quiero una torta'` (lib/whatsapp.ts), mide 196 px, y
+  flyer.test.ts lo lee con el flyer achicado a 540 y 480 px. Filas de detalle reespaciadas (5 datos
+  entran antes del pie). `npm test` 28/28. **Falta: commit + push con OK del CEO, y reescaneo.**
+- D1 **decidido por el CEO: A (papel y chocolate) para la app, B (rosa empolvado) como plantilla "Dulce"
+  del flyer** (T10).
+- T5 hecho: `App.tsx` con rutas por hash (`lib/ruta.ts`), `componentes/NavInferior.tsx` (Inicio, Tortas,
+  Ingredientes, Flyer, Más), tokens de A en `estilos.css`. Sin Tailwind: pocas pantallas, CSS con tokens.
+- T6 hecho: `pantallas/Ingredientes.tsx` (buscador sin tildes, agrupado por categoría, badge de variación,
+  alerta si supera `umbralAlerta`), `FichaIngrediente.tsx` (actual / anterior / variación $ y %, actualizar
+  precio con cambio de presentación, historial), `FormIngrediente.tsx` (alta, edición sin precio, borrar
+  bloqueado si está en una receta). Lógica en `datos/ingredientes.ts`.
+- `Inicio.tsx`: aviso de precios de ejemplo, accesos, top 3 aumentos. `Pendientes.tsx`: Tortas y Más
+  dicen qué falta.
+- `npm test` 38/38 · build limpio. Publicado con OK del CEO.
+- **Próximo:** T7 (gastos, tamaños, opciones con receta) → T8 (constructor de torta).
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

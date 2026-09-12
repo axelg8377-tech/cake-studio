@@ -24,6 +24,24 @@ export function aBase(cantidad: number, unidad: UnidadCarga): { cantidad: number
   return { cantidad: cantidad * factor, unidad: base };
 }
 
+export const NOMBRE_UNIDAD = Object.fromEntries(UNIDADES_CARGA.map((u) => [u.valor, u.nombre])) as Record<
+  UnidadCarga,
+  string
+>;
+
+/** Para cargar en un formulario: 1000 g → 1 kg, 750 g → 750 g. */
+export function desdeBase(cantidad: number, unidad: UnidadBase): { cantidad: number; unidad: UnidadCarga } {
+  if (unidad !== 'u' && cantidad >= 1000 && cantidad % 100 === 0) {
+    return { cantidad: cantidad / 1000, unidad: unidad === 'g' ? 'kg' : 'l' };
+  }
+  return { cantidad, unidad };
+}
+
+/** Un ingrediente en gramos se puede cargar en kg o g, nunca en litros. */
+export function unidadesDe(base: UnidadBase): UnidadCarga[] {
+  return base === 'g' ? ['kg', 'g'] : base === 'ml' ? ['l', 'ml'] : ['u'];
+}
+
 /** Lo contrario, para mostrar: 1500 g → "1,5 kg", 350 ml → "350 ml", 12 u → "12 u". */
 export function mostrarCantidad(cantidad: number, unidad: UnidadBase): string {
   const numero = (n: number) => n.toLocaleString('es-AR', { maximumFractionDigits: 2 });

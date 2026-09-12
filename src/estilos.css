@@ -1,50 +1,280 @@
+/* Dirección A · Papel y chocolate (elegida por el CEO el 2026-09-12). */
+@font-face {
+  font-family: 'Titulos';
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fuentes/playfair-latin.woff2') format('woff2');
+}
+
 :root {
-  color: #3b2a22;
-  background: #f5ede0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --papel: #F5EDE0;
+  --superficie: #FBF7F0;
+  --tinta: #3B2A22;
+  --suave: #6E5A4E;
+  --acento: #A8553A;
+  --acento-hondo: #8E4630;
+  --detalle: #D9C3A5;
+  --linea: #E5D6C2;
+  --sube: #A63A2A;
+  --sube-fondo: #F6DDD5;
+  --baja: #35704A;
+  --baja-fondo: #DCEBDD;
+  --alerta-fondo: #F8E6CC;
+  --alerta-borde: #E9C48F;
+  --titulos: 'Titulos', 'Playfair Display', Georgia, serif;
+  --texto: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --radio: 12px;
+
+  color: var(--tinta);
+  background: var(--papel);
+  font-family: var(--texto);
   font-size: 16px;
   line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  margin: 0;
-}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papel); }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
 
-.prueba {
-  max-width: 480px;
+.app {
+  max-width: 600px;
   margin: 0 auto;
-  padding: 16px;
-  display: grid;
-  gap: 12px;
+  padding-inline: 16px;
+  padding-block: 12px calc(88px + env(safe-area-inset-bottom));
 }
 
-.prueba label {
-  display: grid;
-  gap: 4px;
+/* ── Pantalla ── */
+.pantalla { display: grid; gap: 16px; }
+.pantalla-cab { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pantalla-cab h1 {
+  margin: 0;
+  font-family: var(--titulos);
+  font-size: 30px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.volver {
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--suave);
   font-weight: 600;
 }
 
-.prueba input {
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid #d9c3a5;
-  border-radius: 10px;
+/* ── Botones ── */
+.boton {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radio);
+  background: var(--acento);
+  color: #FFFFFF;
   font: inherit;
-  background: #fff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
 }
+.boton:active { background: var(--acento-hondo); }
+.boton-chico { min-height: 44px; padding: 0 14px; }
+.boton-secundario { background: var(--superficie); color: var(--tinta); border: 1px solid var(--detalle); }
+.boton-secundario:active { background: var(--linea); }
+.boton-peligro { background: transparent; color: var(--sube); border: 1px solid currentColor; }
+.boton-peligro:active { background: var(--sube-fondo); }
 
-.prueba .vista {
+/* ── Formularios ── */
+.formulario { display: grid; gap: 14px; }
+.campo { display: grid; gap: 6px; font-weight: 600; }
+.campo small, .ayuda { font-weight: 400; color: var(--suave); }
+.ayuda { margin: -6px 0 0; font-size: 14px; }
+input, select, textarea {
+  min-height: 48px;
   width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgb(59 42 34 / 0.15);
+  padding: 10px 12px;
+  border: 1px solid var(--detalle);
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: var(--tinta);
+  font: inherit;
+}
+textarea { min-height: 88px; resize: vertical; }
+.fila-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+.ok { margin: 0; color: var(--baja); font-weight: 600; }
+.error { margin: 0; color: var(--sube); font-weight: 600; }
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
+/* ── Avisos ── */
+.aviso {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+}
+.aviso-alerta { background: var(--alerta-fondo); border-color: var(--alerta-borde); }
+.aviso a { font-weight: 700; }
+.vacio { margin: 0; color: var(--suave); }
+
+/* ── Listas ── */
+.buscador input { background: var(--superficie); }
+.grupo-lista { display: grid; gap: 6px; }
+.grupo-lista h2, .rotulo {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+.lista li + li { border-top: 1px solid var(--linea); }
+.fila {
+  min-height: 60px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-decoration: none;
+}
+a.fila:active { background: var(--linea); }
+.fila-principal { display: grid; min-width: 0; }
+.fila-principal small { color: var(--suave); font-variant-numeric: tabular-nums; }
+.variacion {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.variacion.sube { background: var(--sube-fondo); color: var(--sube); }
+.variacion.baja { background: var(--baja-fondo); color: var(--baja); }
+.variacion.igual { background: var(--linea); color: var(--suave); }
+
+/* ── Cifras y bloques ── */
+.cifras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--linea);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  overflow: hidden;
+}
+.cifra { background: var(--superficie); padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
+.cifra span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+.cifra b {
+  font-family: var(--titulos);
+  font-size: 26px;
+  line-height: 1.15;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.cifra small { color: var(--suave); }
+.cifra.principal b { color: var(--acento); }
+.cifra .sube { color: var(--sube); }
+.cifra .baja { color: var(--baja); }
+
+.bloque {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+}
+.bloque h2 { margin: 0; font-family: var(--titulos); font-size: 21px; }
+.accesos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.tabla-caja { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--linea); }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--suave); }
+.num { text-align: right; }
+
+/* ── Navegación inferior ── */
+.nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--superficie);
+  border-top: 1px solid var(--linea);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item {
+  position: relative;
+  min-height: 60px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--suave);
+  font-size: 12px;
+  font-weight: 600;
+}
+.nav-item svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nav-item[aria-current="page"] { color: var(--tinta); }
+.nav-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--acento);
+}
+
+/* ── Flyer (pantalla de prueba de T1, se rehace en T11) ── */
+.prueba { display: grid; gap: 12px; }
+.prueba h1 { margin: 0; font-family: var(--titulos); font-size: 30px; }
+.prueba label { display: grid; gap: 4px; font-weight: 600; }
+.prueba .vista { width: 100%; border-radius: 12px; box-shadow: 0 4px 16px rgb(59 42 34 / .15); }
 .prueba button {
   min-height: 52px;
   border: 0;
-  border-radius: 12px;
-  background: #a8553a;
-  color: #fff;
+  border-radius: var(--radio);
+  background: var(--acento);
+  color: #FFFFFF;
   font: inherit;
   font-weight: 700;
 }

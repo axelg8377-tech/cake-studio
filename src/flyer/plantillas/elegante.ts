@@ -62,11 +62,12 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
   const columna = (items: typeof filas, x: number) =>
     items
       .map((f, i) => {
-        const y = 930 + i * 70;
+        // Tres filas por columna terminan en y=1090, antes de la línea del pie (1104).
+        const y = 914 + i * 72;
         const valor = partir(f.valor, 24, 1)[0];
         return (
-          `<text x="${x}" y="${y}" font-family="${SANS}" font-size="22" font-weight="700" letter-spacing="3" fill="${acento}">${escapar(f.etiqueta.toUpperCase())}</text>` +
-          `<text x="${x}" y="${y + 36}" font-family="${SERIF}" font-size="32" fill="${tinta}">${escapar(valor)}</text>`
+          `<text x="${x}" y="${y}" font-family="${SANS}" font-size="21" font-weight="700" letter-spacing="3" fill="${acento}">${escapar(f.etiqueta.toUpperCase())}</text>` +
+          `<text x="${x}" y="${y + 32}" font-family="${SERIF}" font-size="30" fill="${tinta}">${escapar(valor)}</text>`
         );
       })
       .join('');
@@ -95,13 +96,14 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
     `<text x="${sello.x}" y="${sello.y + 15}" text-anchor="middle" font-family="${SERIF}" font-size="${d.precio >= 100000 ? 36 : 42}" font-weight="700" fill="${papel}">${escapar(formatoPrecio(d.precio))}</text>`,
     columna(filas.slice(0, mitad), 130),
     columna(filas.slice(mitad), 580),
-    `<line x1="110" y1="1124" x2="${ANCHO - 110}" y2="1124" stroke="${detalle}" stroke-width="2"/>`,
-    // 172 px: con 132 no se leía desde la pantalla de un celular (prueba del CEO, 2026-09-12).
-    encajar(r.qrSvg, 100, 1136, 172),
-    `<text x="304" y="1200" font-family="${SERIF}" font-size="36" font-weight="700" fill="${tinta}">Encargos</text>`,
+    `<line x1="110" y1="1104" x2="${ANCHO - 110}" y2="1104" stroke="${detalle}" stroke-width="2"/>`,
+    // 196 px: con 132 no se leía desde la pantalla de un celular (prueba del CEO, 2026-09-12), y el
+    // mensaje prearmado agrega módulos que hay que compensar con tamaño.
+    encajar(r.qrSvg, 100, 1112, 196),
+    `<text x="324" y="1188" font-family="${SERIF}" font-size="36" font-weight="700" fill="${tinta}">Encargos</text>`,
     ...contacto.map(
       (linea, i) =>
-        `<text x="304" y="${1242 + i * 36}" font-family="${SANS}" font-size="26" fill="${tinta}">${escapar(linea)}</text>`,
+        `<text x="324" y="${1230 + i * 36}" font-family="${SANS}" font-size="26" fill="${tinta}">${escapar(linea)}</text>`,
     ),
     '</svg>',
   ].join('');
