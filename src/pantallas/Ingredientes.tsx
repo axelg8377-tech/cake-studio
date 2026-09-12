@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo, useState } from 'react';
-import { Aviso, Pantalla, Variacion } from '../componentes/ui';
+import { Aviso, Ayuda, Pantalla, Variacion } from '../componentes/ui';
 import { ultimosCambios } from '../datos/ingredientes';
 import { db } from '../db';
 import { variacion } from '../lib/costos';
@@ -42,6 +42,15 @@ export default function Ingredientes() {
         </a>
       }
     >
+      <Ayuda id="ingredientes">
+        <p>Acá están los precios de lo que comprás. Todo el cálculo de las tortas sale de estos números.</p>
+        <ul>
+          <li>Tocá un ingrediente para cambiarle el precio. Se guarda el anterior y ves cuánto subió.</li>
+          <li>En rojo lo que aumentó, en verde lo que bajó. Si algo sube más de 20%, aparece un aviso arriba.</li>
+          <li>"Agregar" carga uno nuevo: cuánto pagaste y por cuánto (ej: $4.000 por 12 huevos).</li>
+        </ul>
+      </Ayuda>
+
       {alertas.map((a) => (
         <Aviso key={a.id} alerta>
           <a href={`#/ingredientes/${a.id}`}>{a.nombre}</a> aumentó {Math.round(a.pct)}% desde la última

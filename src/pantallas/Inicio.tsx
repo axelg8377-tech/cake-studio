@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Aviso, Pantalla, Variacion } from '../componentes/ui';
+import { Aviso, Ayuda, Pantalla, Variacion } from '../componentes/ui';
 import { ultimosCambios } from '../datos/ingredientes';
 import { db } from '../db';
 import { variacion } from '../lib/costos';
@@ -20,6 +20,20 @@ export default function Inicio() {
 
   return (
     <Pantalla titulo={config?.negocio.nombre || 'Pastelería'}>
+      <Ayuda id="inicio" titulo="Primeros pasos">
+        <ol>
+          <li>
+            En <a href="#/ingredientes">Ingredientes</a>, cargá lo que pagaste. Los precios que vienen son de ejemplo.
+          </li>
+          <li>
+            En <a href="#/tortas">Tortas</a>, armá una: con opciones ya armadas o tocando los ingredientes uno por uno.
+          </li>
+          <li>La app te dice cuánto te cuesta, cuánto ganás y un precio sugerido. Si cobrás otro, lo escribís.</li>
+          <li>Guardala como borrador. Cuando la entregues, tocá "Ya la hice" y se descuenta el stock.</li>
+        </ol>
+        <p>Cada pantalla tiene su explicación arriba. Se cierra con "Entendido" y se vuelve a ver desde Más.</p>
+      </Ayuda>
+
       {deEjemplo > 0 && (
         <Aviso alerta>
           {deEjemplo} de {ingredientes.length} ingredientes tienen precio de ejemplo. Empezá por actualizar los que

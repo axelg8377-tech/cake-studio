@@ -57,10 +57,10 @@ describe('guardar tortas', () => {
     await base.ingredientes.update(harina.id!, { stock: 1000 });
     const sel = { tamanoId: buscar(cat.tamanos, '24 cm').id!, masaId: buscar(cat.opciones, 'Vainilla').id!, rellenoIds: [], extraIds: [] };
 
-    await guardarTorta({ nombre: 'Prueba', seleccion: sel, margen: 50, estado: 'borrador' }, base);
+    await guardarTorta({ nombre: 'Prueba', seleccion: sel, margen: 50, estado: 'borrador' }, undefined, base);
     expect((await base.ingredientes.get(harina.id!))?.stock).toBe(1000);
 
-    const id = await guardarTorta({ nombre: '', seleccion: sel, margen: 50, precioFinal: 9000, estado: 'realizada' }, base);
+    const id = await guardarTorta({ nombre: '', seleccion: sel, margen: 50, precioFinal: 9000, estado: 'realizada' }, undefined, base);
     expect((await base.ingredientes.get(harina.id!))?.stock).toBeCloseTo(1000 - 250 * 1.44, 6);
     // El chocolate no tiene stock cargado: sigue sin stock.
     expect((await base.ingredientes.get(buscar(cat.ingredientes, 'Manteca').id!))?.stock).toBeUndefined();
@@ -71,13 +71,30 @@ describe('guardar tortas', () => {
     expect(torta?.snapshot.ganancia).toBeCloseTo(9000 - torta!.snapshot.costo, 6);
   });
 
+  it('editar una torta ya realizada no descuenta stock otra vez y conserva la fecha', async () => {
+    const base = await baseSembrada();
+    const cat = await leerCatalogo(base);
+    const harina = buscar(cat.ingredientes, 'Harina 0000');
+    await base.ingredientes.update(harina.id!, { stock: 1000 });
+    const sel = { tamanoId: buscar(cat.tamanos, '20 cm').id!, masaId: buscar(cat.opciones, 'Vainilla').id!, rellenoIds: [], extraIds: [] };
+
+    const id = await guardarTorta({ nombre: 'A', seleccion: sel, margen: 50, estado: 'borrador' }, undefined, base);
+    const fecha = (await base.tortas.get(id))!.fecha;
+    await guardarTorta({ nombre: 'A', seleccion: sel, margen: 50, estado: 'realizada' }, id, base);
+    await guardarTorta({ nombre: 'A editada', seleccion: sel, margen: 60, estado: 'realizada' }, id, base);
+
+    expect((await base.ingredientes.get(harina.id!))?.stock).toBe(750);
+    expect(await base.tortas.count()).toBe(1);
+    expect(await base.tortas.get(id)).toMatchObject({ nombre: 'A editada', fecha, snapshot: { margen: 60 } });
+  });
+
   it('el stock nunca queda negativo', async () => {
     const base = await baseSembrada();
     const cat = await leerCatalogo(base);
     const ddl = buscar(cat.ingredientes, 'Dulce de leche repostero');
     await base.ingredientes.update(ddl.id!, { stock: 100 });
     const sel = { tamanoId: buscar(cat.tamanos, '20 cm').id!, rellenoIds: [buscar(cat.opciones, 'Dulce de leche').id!], extraIds: [] };
-    await guardarTorta({ nombre: 'x', seleccion: sel, margen: 50, estado: 'realizada' }, base);
+    await guardarTorta({ nombre: 'x', seleccion: sel, margen: 50, estado: 'realizada' }, undefined, base);
     expect((await base.ingredientes.get(ddl.id!))?.stock).toBe(0);
   });
 });

@@ -1,4 +1,5 @@
-import { Pantalla } from '../componentes/ui';
+import { useState } from 'react';
+import { mostrarAyudasDeNuevo, Pantalla } from '../componentes/ui';
 
 const SECCIONES = [
   { ruta: 'mas/opciones', nombre: 'Opciones de torta', detalle: 'Masas, rellenos, coberturas, decoración y extras' },
@@ -17,8 +18,24 @@ const PROXIMAS = [
 ];
 
 export default function Mas() {
+  const [ayudas, setAyudas] = useState(false);
   return (
     <Pantalla titulo="Más">
+      <button
+        className="boton boton-secundario"
+        type="button"
+        onClick={() => {
+          mostrarAyudasDeNuevo();
+          setAyudas(true);
+        }}
+      >
+        Volver a ver las explicaciones
+      </button>
+      {ayudas && (
+        <p className="ok" role="status">
+          Listo: cada pantalla vuelve a mostrar su explicación.
+        </p>
+      )}
       <ul className="lista">
         {SECCIONES.map((s) => (
           <li key={s.ruta}>

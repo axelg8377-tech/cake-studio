@@ -76,26 +76,34 @@ export type DatosTorta = {
 };
 
 /**
- * Calcula el costo con los precios de ahora y lo congela. Si la torta está realizada descuenta lo usado
- * del stock de los ingredientes que lo tienen cargado, sin bajar de cero.
+ * Calcula el costo con los precios de ahora y lo congela. Con `id` edita la torta y conserva su fecha.
+ * Descuenta stock solo la primera vez que la torta pasa a realizada: editar una ya hecha no lo descuenta
+ * de nuevo. Nunca baja de cero.
  */
-export async function guardarTorta(datos: DatosTorta, base: BaseDatos = db): Promise<number> {
+export async function guardarTorta(datos: DatosTorta, id?: number, base: BaseDatos = db): Promise<number> {
   return base.transaction('rw', [base.ingredientes, base.gastos, base.opciones, base.tamanos, base.tortas], async () => {
     const cat = await leerCatalogo(base);
+    const previa = id ? await base.tortas.get(id) : undefined;
     const snapshot = calcularTorta(datos.seleccion, cat, datos.margen, datos.precioFinal);
-    if (datos.estado === 'realizada') {
+    if (datos.estado === 'realizada' && previa?.estado !== 'realizada') {
       for (const [ingredienteId, usado] of consumo(datos.seleccion, cat)) {
         const stock = cat.ingredientes.get(ingredienteId)?.stock;
         if (stock !== undefined) await base.ingredientes.update(ingredienteId, { stock: Math.max(0, stock - usado) });
       }
     }
-    const id = await base.tortas.add({
-      fecha: new Date().toISOString(),
+    const fila: Torta = {
+      fecha: previa?.fecha ?? new Date().toISOString(),
       nombre: datos.nombre.trim() || 'Torta sin nombre',
+      clienteId: previa?.clienteId,
       seleccion: datos.seleccion,
       snapshot,
       estado: datos.estado,
-    });
-    return id as number;
+    };
+    return (await base.tortas.put(previa ? { ...fila, id: previa.id } : fila)) as number;
   });
+}
+
+/** Borrar una torta realizada no devuelve el stock: los ingredientes ya se usaron. */
+export async function eliminarTorta(id: number, base: BaseDatos = db): Promise<void> {
+  await base.tortas.delete(id);
 }

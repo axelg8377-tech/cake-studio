@@ -22,7 +22,7 @@ function Contenido({ ruta }: { ruta: string[] }) {
     if (id) return <FichaIngrediente key={id} id={Number(id)} />;
     return <Ingredientes />;
   }
-  if (seccion === 'tortas') return <Constructor />;
+  if (seccion === 'tortas') return <Constructor key={id ?? 'nueva'} id={id ? Number(id) : undefined} />;
   if (seccion === 'flyer') return <PruebaFlyer />;
   if (seccion === 'mas') {
     if (id === 'gastos') return accion ? <FormGasto key={accion} id={idDe(accion)} /> : <Gastos />;

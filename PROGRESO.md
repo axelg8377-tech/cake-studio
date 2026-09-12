@@ -91,6 +91,29 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
 - **No verificado:** en Android real, y "Ya la hice" descontando stock desde la pantalla (sí está en test).
 - **Falta:** commit + push con OK del CEO. Próximo: sesión 3 (T9 galería, T10 plantillas, T11 flyer).
 
+### Sesión 2, segunda parte — pedidos del CEO tras probar la app (sin commitear)
+
+- T7 y T8 publicados en `2a5e01e`. El CEO probó los pasos 1, 2, 4 y 5 en el celular: bien. El 3 (stock) no lo probó.
+- **Torta por ingredientes sueltos** (pedido del CEO): en Tortas, "Elegir opciones" / "Elegir ingredientes".
+  `Seleccion.ingredientes?: LineaReceta[]` (opcional, las tortas viejas no lo tienen). Esas cantidades **no se
+  escalan** por tamaño: son las de esa torta. `calcularTorta` y `consumo` las suman. En ese modo solo se muestran
+  los extras de las opciones.
+- **Tortas guardadas se abren y editan** (pedido del CEO): ruta `#/tortas/:id`. Guardar cambios, Ya la hice,
+  Guardar como torta nueva / Hacer otra igual (copia en borrador), Borrar. `guardarTorta(datos, id?)` conserva la
+  fecha y **descuenta stock solo la primera vez** que pasa a hecha. Borrar una hecha no devuelve stock (lo avisa).
+  Al abrir una guardada el costo se recalcula con precios de hoy.
+- **Explicaciones** (pedido del CEO): `Ayuda` en `componentes/ui.tsx`, un `<details>` abierto hasta "Entendido",
+  recordado en `localStorage` (`ayuda-vista:<pantalla>`). Si no hay almacenamiento, se muestra siempre. Está en
+  Inicio (primeros pasos), Tortas, Ingredientes, ficha de ingrediente, Opciones, Tamaños y Gastos. Más tiene
+  "Volver a ver las explicaciones".
+- Verificación: `npm test` 47/47 · build limpio · **recorrido con agent-browser a 412 px: 74/74 comprobaciones**
+  (navegación, explicaciones, los dos modos, abrir/editar/copiar/borrar tortas, aviso de stock, buscador, alta y
+  precio de ingrediente, bloqueos de borrado, opciones, tamaños, gastos, ruta inexistente). Guiones en el
+  scratchpad de la sesión, no en el repo.
+- Cicatriz de la prueba: `agent-browser open` a la misma URL con otro `#` **no recarga**. Borrar IndexedDB con la
+  app abierta la deja vacía sin semilla hasta recargar. Para resetear: `deleteDatabase` + `location.reload()`.
+- **Falta:** commit + push con OK del CEO. Después, sesión nueva: T9 galería, T10 plantillas, T11 flyer.
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

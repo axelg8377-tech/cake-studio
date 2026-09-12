@@ -84,6 +84,8 @@ export interface Seleccion {
   coberturaId?: number;
   decoracionId?: number;
   extraIds: number[];
+  /** Torta armada tocando ingredientes sueltos: cantidades de esta torta, no se escalan por tamaño. */
+  ingredientes?: LineaReceta[];
 }
 
 export interface LineaCosto {

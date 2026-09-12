@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
-import { Aviso, NoEncontrado, Pantalla } from '../componentes/ui';
+import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarGasto, guardarGasto } from '../datos/catalogo';
 import { db } from '../db';
 import { leerPesos, pesos } from '../lib/formato';
@@ -21,10 +21,17 @@ export function Gastos() {
         </a>
       }
     >
-      <Aviso>
-        Los de <b>cada torta</b> se suman solos al costo. Los otros (caja especial, delivery) se cobran solo en las
-        opciones que los usan.
-      </Aviso>
+      <Ayuda id="gastos">
+        <p>Lo que gastás además de los ingredientes.</p>
+        <ul>
+          <li>
+            <b>Cada torta:</b> se suma solo al costo de todas (base de cartón, gas y luz).
+          </li>
+          <li>
+            <b>Solo si se elige:</b> se cobra cuando lo lleva una opción extra, como "Caja especial" o "Delivery".
+          </li>
+        </ul>
+      </Ayuda>
       {gastos.length === 0 ? (
         <p className="vacio">Todavía no hay gastos. Tocá Agregar.</p>
       ) : (

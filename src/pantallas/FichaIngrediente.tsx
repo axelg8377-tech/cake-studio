@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
-import { claseCambio, Pantalla } from '../componentes/ui';
+import { Ayuda, claseCambio, Pantalla } from '../componentes/ui';
 import { actualizarPrecio } from '../datos/ingredientes';
 import { db } from '../db';
 import { variacion } from '../lib/costos';
@@ -70,6 +70,20 @@ export default function FichaIngrediente({ id }: { id: number }) {
         </a>
       }
     >
+      <Ayuda id="ficha-ingrediente">
+        <ul>
+          <li>
+            <b>Precio nuevo:</b> lo que pagaste ahora. <b>Por cuánto</b> solo si cambió el paquete (antes 1 kg, ahora
+            500 g): la app compara a igual cantidad.
+          </li>
+          <li>El historial de abajo guarda cada cambio con su fecha.</li>
+          <li>
+            Con <b>Editar</b> cambiás nombre, categoría y stock. El stock es opcional: si lo cargás, la app avisa cuando
+            no alcanza para una torta.
+          </li>
+        </ul>
+      </Ayuda>
+
       <div className="cifras">
         <div className="cifra principal">
           <span>Precio actual</span>

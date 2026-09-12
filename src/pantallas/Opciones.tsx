@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
-import { NoEncontrado, Pantalla } from '../componentes/ui';
+import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarOpcion, guardarOpcion, leerCatalogo } from '../datos/catalogo';
 import { costoOpcion, NOMBRE_TIPO, type Catalogo } from '../lib/costos';
 import { leerNumero, leerPesos, pesos } from '../lib/formato';
@@ -36,6 +36,20 @@ export function Opciones() {
         </a>
       }
     >
+      <Ayuda id="opciones">
+        <p>Una opción es una parte de la torta lista para elegir: una masa, un relleno, una cobertura.</p>
+        <ul>
+          <li>
+            <b>Por receta:</b> ingredientes y cantidades para el molde base. Si cambia el precio de un ingrediente, el
+            costo se actualiza solo.
+          </li>
+          <li>
+            <b>Precio fijo:</b> para lo que no tiene receta, como una decoración temática o las velas.
+          </li>
+          <li>Si una torta es distinta a todo, no hace falta crear opciones: en Tortas elegí "Elegir ingredientes".</li>
+        </ul>
+      </Ayuda>
+
       <p className="vacio">
         Costo de cada una para {base ? `el molde de ${base.nombre}` : 'la receta base'}. Al armar la torta se ajusta al
         tamaño elegido.

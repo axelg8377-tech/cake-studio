@@ -1,5 +1,52 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { pesosConSigno, porcentaje } from '../lib/formato';
+
+const PREFIJO_AYUDA = 'ayuda-vista:';
+
+/**
+ * Explicación de la pantalla. Abierta hasta que se toca "Entendido"; eso se recuerda en este teléfono.
+ * Si el navegador no deja guardar (modo privado), se muestra abierta siempre: mejor de más que de menos.
+ */
+export function Ayuda({ id, titulo = 'Cómo se usa esta pantalla', children }: { id: string; titulo?: string; children: ReactNode }) {
+  const [abierta, setAbierta] = useState(() => {
+    try {
+      return localStorage.getItem(PREFIJO_AYUDA + id) === null;
+    } catch {
+      return true;
+    }
+  });
+
+  function entendido() {
+    try {
+      localStorage.setItem(PREFIJO_AYUDA + id, '1');
+    } catch {
+      // Sin almacenamiento: se cierra igual por ahora.
+    }
+    setAbierta(false);
+  }
+
+  return (
+    <details className="ayuda-caja" open={abierta} onToggle={(e) => setAbierta(e.currentTarget.open)}>
+      <summary>{titulo}</summary>
+      <div className="ayuda-cuerpo">
+        {children}
+        <button className="boton boton-chico boton-secundario" type="button" onClick={entendido}>
+          Entendido
+        </button>
+      </div>
+    </details>
+  );
+}
+
+export function mostrarAyudasDeNuevo(): void {
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(PREFIJO_AYUDA))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // Sin almacenamiento las ayudas ya se ven siempre.
+  }
+}
 
 export function Pantalla({
   titulo,

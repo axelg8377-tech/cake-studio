@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
-import { NoEncontrado, Pantalla } from '../componentes/ui';
+import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarTamano, guardarTamano } from '../datos/catalogo';
 import { db } from '../db';
 import { leerNumero } from '../lib/formato';
@@ -23,9 +23,17 @@ export function Tamanos() {
         </a>
       }
     >
-      <p className="vacio">
-        Las recetas están pensadas para el tamaño de factor 1. Uno de factor 1,44 lleva 44% más de cada ingrediente.
-      </p>
+      <Ayuda id="tamanos">
+        <p>
+          Las recetas de las opciones están pensadas para el tamaño de <b>factor 1</b>. El factor dice cuánto más (o
+          menos) lleva otro molde.
+        </p>
+        <ul>
+          <li>Factor 1,44: lleva 44% más de cada ingrediente. Factor 0,56: casi la mitad.</li>
+          <li>Molde redondo: (diámetro ÷ 20) × (diámetro ÷ 20). Para 24 cm da 1,44.</li>
+          <li>Los gastos (caja, base) no cambian con el tamaño.</li>
+        </ul>
+      </Ayuda>
       <ul className="lista">
         {tamanos.map((t) => (
           <li key={t.id}>

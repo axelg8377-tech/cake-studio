@@ -13,6 +13,7 @@ import type {
   Tamano,
   TipoOpcion,
 } from '../tipos';
+import { mostrarCantidad } from './unidades';
 
 export type Catalogo = {
   ingredientes: Map<number, Ingrediente>;
@@ -82,6 +83,15 @@ export function calcularTorta(
     const op = cat.opciones.get(id);
     if (op) lineas.push({ concepto: `${NOMBRE_TIPO[op.tipo]}: ${op.nombre}`, costo: costoOpcion(op, factor, cat) });
   }
+  for (const linea of sel.ingredientes ?? []) {
+    const ing = cat.ingredientes.get(linea.ingredienteId);
+    if (ing) {
+      lineas.push({
+        concepto: `${ing.nombre} (${mostrarCantidad(linea.cantidad, ing.unidad)})`,
+        costo: costoIngrediente(ing, linea.cantidad),
+      });
+    }
+  }
   for (const gasto of cat.gastos.values()) {
     if (gasto.porTorta) lineas.push({ concepto: gasto.nombre, costo: gasto.precio });
   }
@@ -102,6 +112,9 @@ export function consumo(sel: Seleccion, cat: Catalogo): Map<number, number> {
     for (const linea of op.receta) {
       total.set(linea.ingredienteId, (total.get(linea.ingredienteId) ?? 0) + linea.cantidad * factor);
     }
+  }
+  for (const linea of sel.ingredientes ?? []) {
+    total.set(linea.ingredienteId, (total.get(linea.ingredienteId) ?? 0) + linea.cantidad);
   }
   return total;
 }

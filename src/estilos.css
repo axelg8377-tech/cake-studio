@@ -262,6 +262,26 @@ fieldset.paso { padding: 0; border: 0; }
 .boton:disabled { opacity: .6; }
 details summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
 
+.subrotulo { font-size: 14px; color: var(--suave); }
+.linea-libre { display: grid; gap: 6px; }
+.linea-libre + .linea-libre { border-top: 1px solid var(--linea); padding-top: 12px; }
+.linea-libre-cab { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.linea-libre-campos { display: grid; grid-template-columns: 1fr 2rem 44px; gap: 8px; align-items: center; }
+
+/* ── Ayuda de cada pantalla ── */
+.ayuda-caja {
+  background: var(--superficie);
+  border: 1px solid var(--detalle);
+  border-left: 4px solid var(--acento);
+  border-radius: var(--radio);
+  padding: 0 14px;
+}
+.ayuda-caja summary { color: var(--acento-hondo); }
+.ayuda-cuerpo { display: grid; gap: 10px; padding-bottom: 14px; }
+.ayuda-cuerpo p, .ayuda-cuerpo ol, .ayuda-cuerpo ul { margin: 0; }
+.ayuda-cuerpo ol, .ayuda-cuerpo ul { padding-left: 20px; display: grid; gap: 6px; }
+.ayuda-cuerpo .boton { justify-self: start; }
+
 /* Costo, ganancia y precio con colores distintos, fijos arriba de la barra de navegación. */
 .resumen {
   position: sticky;

@@ -124,6 +124,23 @@ describe('torta completa', () => {
     expect(redondearArriba(12000)).toBe(12000);
   });
 
+  it('armada con ingredientes sueltos: se cobran tal cual, sin escalar por tamaño', () => {
+    const libre: Seleccion = {
+      tamanoId: 1,
+      rellenoIds: [],
+      extraIds: [],
+      ingredientes: [
+        { ingredienteId: 1, cantidad: 500 },
+        { ingredienteId: 2, cantidad: 6 },
+      ],
+    };
+    const s = calcularTorta(libre, cat, 50);
+    // 1000 de harina + 2000 de huevos + 1500 de la base de cartón, aunque el tamaño tenga factor 1,5
+    expect(s.costo).toBeCloseTo(4500);
+    expect(s.lineas.map((l) => l.concepto)).toEqual(['Harina (500 g)', 'Huevos (6 g)', 'Base de cartón']);
+    expect(consumo(libre, cat).get(1)).toBe(500);
+  });
+
   it('avisa de stock insuficiente solo donde hay stock cargado', () => {
     expect(consumo(sel, cat).get(1)).toBe(750);
     expect(faltantesDeStock(sel, cat)).toEqual([{ ingredienteId: 1, nombre: 'Harina', necesita: 750, hay: 600 }]);
