@@ -1,13 +1,68 @@
 /** Utilidades compartidas por las plantillas. Todas devuelven texto: nada toca el DOM. */
+import { encajar } from './qrMarca';
 
 export type Paleta = { papel: string; tinta: string; acento: string; detalle: string };
 
+export type Negocio = { nombre: string; telefono: string; instagram?: string };
+
+/** Dirección A. */
 export const PALETA_PAPEL: Paleta = {
   papel: '#F5EDE0',
   tinta: '#3B2A22',
   acento: '#A8553A',
   detalle: '#D9C3A5',
 };
+
+/** Dirección B, la de la plantilla Dulce. `detalle` es el dorado. */
+export const PALETA_ROSA: Paleta = {
+  papel: '#FFF7EC',
+  tinta: '#3B2A26',
+  acento: '#D98E96',
+  detalle: '#E9B872',
+};
+
+export const SERIF = "'Titulos', 'Playfair Display', Georgia, 'Times New Roman', serif";
+export const SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
+
+/**
+ * Pie de las tres plantillas: línea, QR abajo a la izquierda, "Encargos" y contactos.
+ * 196 px: con 132 no se leía desde la pantalla de un celular (prueba del CEO, 2026-09-12), y el
+ * mensaje prearmado agrega módulos que hay que compensar con tamaño. flyer.test.ts lo lee a 480 px.
+ */
+export function pie(
+  qrSvg: string,
+  negocio: Negocio,
+  { tinta, detalle }: Paleta,
+  encargos: { familia: string; tamano: number; peso: number } = { familia: SERIF, tamano: 36, peso: 700 },
+): string {
+  const contacto = [
+    negocio.telefono && `WhatsApp ${negocio.telefono}`,
+    negocio.instagram && `@${negocio.instagram.replace(/^@/, '')}`,
+  ].filter(Boolean) as string[];
+  return [
+    `<line x1="110" y1="1104" x2="970" y2="1104" stroke="${detalle}" stroke-width="2"/>`,
+    encajar(qrSvg, 100, 1112, 196),
+    `<text x="324" y="1188" font-family="${encargos.familia}" font-size="${encargos.tamano}" font-weight="${encargos.peso}" fill="${tinta}">Encargos</text>`,
+    ...contacto.map(
+      (linea, i) =>
+        `<text x="324" y="${1230 + i * 36}" font-family="${SANS}" font-size="26" fill="${tinta}">${escapar(linea)}</text>`,
+    ),
+  ].join('');
+}
+
+/** Borde de flor de la referencia Dough Daze: un círculo con `ondas` semicírculos hacia afuera. */
+export function feston(cx: number, cy: number, radio: number, ondas = 10): string {
+  const seno = Math.sin(Math.PI / ondas);
+  const base = radio / (1 + seno);
+  const onda = (base * seno).toFixed(1);
+  const punto = (i: number) => {
+    const a = (2 * Math.PI * i) / ondas - Math.PI / 2;
+    return `${(cx + base * Math.cos(a)).toFixed(1)},${(cy + base * Math.sin(a)).toFixed(1)}`;
+  };
+  let d = `M${punto(0)}`;
+  for (let i = 1; i <= ondas; i++) d += `A${onda},${onda} 0 0 1 ${punto(i)}`;
+  return `${d}Z`;
+}
 
 export function escapar(texto: string): string {
   return texto

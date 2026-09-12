@@ -114,6 +114,26 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
   app abierta la deja vacía sin semilla hasta recargar. Para resetear: `deleteDatabase` + `location.reload()`.
 - **Falta:** commit + push con OK del CEO. Después, sesión nueva: T9 galería, T10 plantillas, T11 flyer.
 
+## Sesión 3 — 2026-09-12 (Opus) · T9, T10 y T11 hechos, sin commitear
+
+- T9: `pantallas/Galeria.tsx` (Más › Galería) + `datos/imagenes.ts` (`subirFotos` achica a 1200 px JPEG,
+  `marcarPrincipal` deja una sola). `Miniatura` en `componentes/ui.tsx` libera la URL blob al desmontar.
+  **El set base en SVG no va como fotos:** flor, sello y logo ya se dibujan dentro de las plantillas, y sin foto
+  sale el logo grande. Si el CEO quiere formas elegibles como imagen, se agrega.
+- T10: `flyer/plantillas/dulce.ts` (paleta B, Great Vibes OFL en `public/fuentes/` con su licencia, foto en
+  flor con `feston()`, sello dorado, datos en columna con hasta 2 líneas) y `carta.ts` (tamaños con precio,
+  masas/rellenos/coberturas, máx. 6 por lista con "y N más"). El pie (QR 196 px + contactos) pasó a `pie()`
+  en `svg.ts` y lo usan las tres: el tamaño probado por el CEO no cambia.
+  `flyer/desdeTorta.ts`: `flyerDeTorta` (del snapshot sale solo el precio final) y `cartaDelCatalogo` (precio
+  "desde" = masa + relleno + cobertura más baratos a ese tamaño, con `margenDefecto`; editable en pantalla).
+- T11: `pantallas/Flyer.tsx` en `#/flyer` y `#/flyer/:tortaId` (botón "Hacer flyer" en el constructor).
+  Diseño, torta guardada, nombre/texto/precio, foto (o subir una), datos del negocio guardados en `config`,
+  vista previa, "Enviar por WhatsApp" y "Descargar". Sin WhatsApp cargado los botones quedan apagados.
+  `PruebaFlyer.tsx` borrado; `fotoDataUri` reemplazado por `reducirFoto` + `blobADataUri`.
+- Verificación: `npm test` 60/60 (las 3 plantillas: tamaño, escape, QR con logo, JPEG 60, 540 y 480 px, sin
+  foto; cuenta de la carta). Build limpio. PNG de las tres revisados a ojo.
+- **No verificado:** Android real y escaneo del QR de Dulce y Carta con otro teléfono.
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

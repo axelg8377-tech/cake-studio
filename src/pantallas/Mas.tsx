@@ -5,11 +5,11 @@ const SECCIONES = [
   { ruta: 'mas/opciones', nombre: 'Opciones de torta', detalle: 'Masas, rellenos, coberturas, decoración y extras' },
   { ruta: 'mas/tamanos', nombre: 'Tamaños', detalle: 'Moldes y cuánto rinde cada uno' },
   { ruta: 'mas/gastos', nombre: 'Gastos', detalle: 'Caja, base de cartón, gas y luz' },
+  { ruta: 'mas/galeria', nombre: 'Galería de fotos', detalle: 'Las fotos de tus tortas para el flyer' },
 ];
 
 /** Lo que todavía no está construido se lista sin link: dice qué falta, sin simular que anda. */
 const PROXIMAS = [
-  'Galería de fotos',
   'Tortas realizadas',
   'Clientes',
   'Revisar precios de tortas',

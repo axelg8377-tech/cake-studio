@@ -463,6 +463,9 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
               Guardar como torta nueva
             </button>
           )}
+          <a className="boton boton-secundario" href={`#/flyer/${inicial.id}`}>
+            Hacer flyer
+          </a>
           <button className="boton boton-peligro" type="button" onClick={borrar}>
             Borrar torta
           </button>

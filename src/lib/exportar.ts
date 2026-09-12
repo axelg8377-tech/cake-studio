@@ -68,8 +68,8 @@ export function fuenteDataUri(url: string): Promise<string | null> {
   return fuentes.get(url)!;
 }
 
-/** Foto del celular reducida a `ladoMaximo`: una foto de 4 MB no entra cien veces en IndexedDB. */
-export async function fotoDataUri(archivo: Blob, ladoMaximo = 1200): Promise<string> {
+/** Foto del celular reducida a `ladoMaximo` en JPEG: una foto de 4 MB no entra cien veces en IndexedDB. */
+export async function reducirFoto(archivo: Blob, ladoMaximo = 1200): Promise<Blob> {
   const mapa = await createImageBitmap(archivo);
   const factor = Math.min(1, ladoMaximo / Math.max(mapa.width, mapa.height));
   const lienzo = document.createElement('canvas');
@@ -77,7 +77,19 @@ export async function fotoDataUri(archivo: Blob, ladoMaximo = 1200): Promise<str
   lienzo.height = Math.round(mapa.height * factor);
   lienzo.getContext('2d')!.drawImage(mapa, 0, 0, lienzo.width, lienzo.height);
   mapa.close();
-  return lienzo.toDataURL('image/jpeg', 0.85);
+  const blob = await new Promise<Blob | null>((listo) => lienzo.toBlob(listo, 'image/jpeg', 0.85));
+  if (!blob) throw new Error('La foto no se pudo achicar');
+  return blob;
+}
+
+/** El SVG del flyer necesita la foto adentro, como data URI: una URL blob: no pasa al canvas. */
+export function blobADataUri(blob: Blob): Promise<string> {
+  return new Promise((listo, falla) => {
+    const lector = new FileReader();
+    lector.onload = () => listo(lector.result as string);
+    lector.onerror = () => falla(lector.error);
+    lector.readAsDataURL(blob);
+  });
 }
 
 function aBase64(bytes: Uint8Array): string {

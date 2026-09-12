@@ -348,17 +348,55 @@ details summary { min-height: 44px; display: flex; align-items: center; font-wei
   background: var(--acento);
 }
 
-/* ── Flyer (pantalla de prueba de T1, se rehace en T11) ── */
-.prueba { display: grid; gap: 12px; }
-.prueba h1 { margin: 0; font-family: var(--titulos); font-size: 30px; }
-.prueba label { display: grid; gap: 4px; font-weight: 600; }
-.prueba .vista { width: 100%; border-radius: 12px; box-shadow: 0 4px 16px rgb(59 42 34 / .15); }
-.prueba button {
-  min-height: 52px;
-  border: 0;
+/* ── Galería ── */
+.galeria {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.foto {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
   border-radius: var(--radio);
-  background: var(--acento);
-  color: #FFFFFF;
+}
+.miniatura { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; background: var(--linea); }
+.foto .boton[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+/* El input de archivo va escondido adentro de un label con forma de botón: el foco se ve en el label. */
+.boton:has(input:focus-visible), .foto-opcion:has(input:focus-visible) { outline: 3px solid var(--acento); outline-offset: 2px; }
+
+/* ── Flyer ── */
+.fotos-elegir { display: flex; gap: 8px; overflow-x: auto; padding: 3px 3px 6px; }
+.foto-opcion {
+  flex: none;
+  width: 88px;
+  height: 88px;
+  padding: 0;
+  border: 2px solid var(--detalle);
+  border-radius: var(--radio);
+  background: #FFFFFF;
+  color: var(--tinta);
   font: inherit;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.foto-opcion .miniatura { height: 100%; border-radius: 0; }
+.foto-opcion[aria-pressed="true"] { border-color: var(--tinta); box-shadow: 0 0 0 2px var(--tinta); }
+.foto-subir { border-style: dashed; }
+.vista-flyer {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1080 / 1350;
+  border-radius: var(--radio);
+  box-shadow: 0 4px 16px rgb(59 42 34 / .15);
 }

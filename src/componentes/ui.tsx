@@ -1,4 +1,15 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+
+/** Foto guardada en la base. La URL temporal se libera al desmontar para no llenar la memoria. */
+export function Miniatura({ blob, alt }: { blob: Blob; alt: string }) {
+  const [url, setUrl] = useState<string>();
+  useEffect(() => {
+    const u = URL.createObjectURL(blob);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [blob]);
+  return url ? <img className="miniatura" src={url} alt={alt} /> : null;
+}
 import { pesosConSigno, porcentaje } from '../lib/formato';
 
 const PREFIJO_AYUDA = 'ayuda-vista:';

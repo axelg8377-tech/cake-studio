@@ -1,11 +1,12 @@
 import { NavInferior } from './componentes/NavInferior';
 import { useRuta } from './lib/ruta';
-import PruebaFlyer from './PruebaFlyer';
 import FichaIngrediente from './pantallas/FichaIngrediente';
 import FormIngrediente from './pantallas/FormIngrediente';
 import Ingredientes from './pantallas/Ingredientes';
 import Inicio from './pantallas/Inicio';
 import Constructor from './pantallas/Constructor';
+import Flyer from './pantallas/Flyer';
+import Galeria from './pantallas/Galeria';
 import { FormGasto, Gastos } from './pantallas/Gastos';
 import Mas from './pantallas/Mas';
 import { FormOpcion, Opciones } from './pantallas/Opciones';
@@ -23,8 +24,9 @@ function Contenido({ ruta }: { ruta: string[] }) {
     return <Ingredientes />;
   }
   if (seccion === 'tortas') return <Constructor key={id ?? 'nueva'} id={id ? Number(id) : undefined} />;
-  if (seccion === 'flyer') return <PruebaFlyer />;
+  if (seccion === 'flyer') return <Flyer key={id ?? 'libre'} tortaId={id ? Number(id) : undefined} />;
   if (seccion === 'mas') {
+    if (id === 'galeria') return <Galeria />;
     if (id === 'gastos') return accion ? <FormGasto key={accion} id={idDe(accion)} /> : <Gastos />;
     if (id === 'tamanos') return accion ? <FormTamano key={accion} id={idDe(accion)} /> : <Tamanos />;
     if (id === 'opciones') return accion ? <FormOpcion key={accion} id={idDe(accion)} /> : <Opciones />;

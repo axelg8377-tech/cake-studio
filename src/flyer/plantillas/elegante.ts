@@ -1,4 +1,3 @@
-import { encajar } from '../qrMarca';
 import {
   ajustar,
   escapar,
@@ -6,6 +5,10 @@ import {
   formatoPrecio,
   fuenteFace,
   partir,
+  pie,
+  SANS,
+  SERIF,
+  type Negocio,
   type Paleta,
 } from '../svg';
 
@@ -18,7 +21,7 @@ export type DatosFlyer = {
   tamano: string;
   detalle: { etiqueta: string; valor: string }[];
   precio: number;
-  negocio: { nombre: string; telefono: string; instagram?: string };
+  negocio: Negocio;
 };
 
 export type RecursosFlyer = {
@@ -26,10 +29,9 @@ export type RecursosFlyer = {
   qrSvg: string;
   fotoDataUri: string | null;
   fuenteTitulos: string | null;
+  /** Letra cursiva de la plantilla Dulce. */
+  fuenteGuion?: string | null;
 };
-
-const SERIF = "'Titulos', 'Playfair Display', Georgia, 'Times New Roman', serif";
-const SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
 
 /** Plantilla Elegante: papel crema, serif grande, foto protagonista, QR junto a los contactos. */
 export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
@@ -72,11 +74,6 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
       })
       .join('');
 
-  const contacto = [
-    d.negocio.telefono && `WhatsApp ${d.negocio.telefono}`,
-    d.negocio.instagram && `@${d.negocio.instagram.replace(/^@/, '')}`,
-  ].filter(Boolean) as string[];
-
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ANCHO} ${ALTO}" width="${ANCHO}" height="${ALTO}">`,
     `<defs><style>${fuenteFace('Titulos', r.fuenteTitulos)}</style>`,
@@ -96,15 +93,7 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
     `<text x="${sello.x}" y="${sello.y + 15}" text-anchor="middle" font-family="${SERIF}" font-size="${d.precio >= 100000 ? 36 : 42}" font-weight="700" fill="${papel}">${escapar(formatoPrecio(d.precio))}</text>`,
     columna(filas.slice(0, mitad), 130),
     columna(filas.slice(mitad), 580),
-    `<line x1="110" y1="1104" x2="${ANCHO - 110}" y2="1104" stroke="${detalle}" stroke-width="2"/>`,
-    // 196 px: con 132 no se leía desde la pantalla de un celular (prueba del CEO, 2026-09-12), y el
-    // mensaje prearmado agrega módulos que hay que compensar con tamaño.
-    encajar(r.qrSvg, 100, 1112, 196),
-    `<text x="324" y="1188" font-family="${SERIF}" font-size="36" font-weight="700" fill="${tinta}">Encargos</text>`,
-    ...contacto.map(
-      (linea, i) =>
-        `<text x="324" y="${1230 + i * 36}" font-family="${SANS}" font-size="26" fill="${tinta}">${escapar(linea)}</text>`,
-    ),
+    pie(r.qrSvg, d.negocio, r.paleta),
     '</svg>',
   ].join('');
 }
