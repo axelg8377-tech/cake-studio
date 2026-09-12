@@ -31,6 +31,26 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
   (CICD-03). Primer deploy verde. Aviso de GitHub: esas acciones apuntan a Node 20 (deprecado) y corren
   forzadas en Node 24; actualizar los SHA a versiones nuevas cuando haga falta.
 
+### Prueba del CEO en Android (T1 cerrado con un arreglo)
+- Compartir a WhatsApp, fuente, foto y precio: bien en el teléfono real.
+- QR: no lo pudo escanear. Con su imagen real, jsqr lee el QR a 1080 y 720 px de ancho y **falla a
+  540 y 400 px** (tamaño en pantalla de un celular). Causa: el mensaje `?text=` duplicaba la densidad.
+- Arreglo: el QR lleva solo `wa.me/549…`, pasa de 132 a 172 px, y hay un test que lo lee con el flyer
+  achicado a 540 px en JPEG 70. **Falta que el CEO lo reescanee con el celular.**
+
+### T2 · T3 · T4 hechos (sin publicar)
+- T2: `vite-plugin-pwa` (autoUpdate, manifest en español, scope `./`), íconos en `public/iconos/`
+  generados con `node scripts/iconos.ts`, precache con fuentes. Build: `sw.js` + 17 entradas.
+  `lib/almacenamiento.ts` pide `navigator.storage.persist()` al abrir.
+- T3: `src/db.ts` (Dexie, 9 tablas de PLAN.md) + `src/datos/semilla.ts` (12 ingredientes, 4 gastos,
+  4 tamaños con factor por área, 11 opciones). Se siembra al abrir si no hay config, sin `populate`.
+- T4: `src/tipos.ts`, `lib/unidades.ts`, `lib/costos.ts` (costo por ingrediente, opción, torta, margen,
+  redondeo, consumo y faltantes de stock).
+- `npm test`: 27/27 (flyer, costos del brief, base con fake-indexeddb). `npm run build`: limpio.
+- La pantalla visible sigue siendo `PruebaFlyer`; la app real arranca en T5.
+- **T0 de spec-kit sin completar a propósito:** el CEO pidió avanzar directo. PLAN.md + este archivo
+  son la especificación.
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

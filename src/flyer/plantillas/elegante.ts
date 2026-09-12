@@ -48,11 +48,11 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
   const ySubtitulo = yTitulo + (titulo.length - 1) * interlineado + 48;
   const finTitulo = d.tamano ? ySubtitulo : yTitulo + (titulo.length - 1) * interlineado;
 
-  // La foto arranca donde termina el título y siempre termina en y=890: lo de abajo no se mueve.
+  // La foto arranca donde termina el título y siempre termina en y=860: lo de abajo no se mueve.
   const yFoto = finTitulo + 40;
-  const foto = { x: 110, y: yFoto, ancho: 860, alto: 890 - yFoto };
-  // El sello va sobre la esquina de la foto y termina antes de la primera etiqueta (y=960).
-  const sello = { x: 856, y: 790, radio: 124 };
+  const foto = { x: 110, y: yFoto, ancho: 860, alto: 860 - yFoto };
+  // El sello va sobre la esquina de la foto y termina antes de la primera etiqueta (y=930).
+  const sello = { x: 856, y: 770, radio: 124 };
   const fotoSvg = r.fotoDataUri
     ? `<image href="${r.fotoDataUri}" x="${foto.x}" y="${foto.y}" width="${foto.ancho}" height="${foto.alto}" preserveAspectRatio="xMidYMid slice" clip-path="url(#fl-foto)"/>`
     : `<rect x="${foto.x}" y="${foto.y}" width="${foto.ancho}" height="${foto.alto}" rx="36" fill="${detalle}"/>`;
@@ -62,7 +62,7 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
   const columna = (items: typeof filas, x: number) =>
     items
       .map((f, i) => {
-        const y = 960 + i * 80;
+        const y = 930 + i * 70;
         const valor = partir(f.valor, 24, 1)[0];
         return (
           `<text x="${x}" y="${y}" font-family="${SANS}" font-size="22" font-weight="700" letter-spacing="3" fill="${acento}">${escapar(f.etiqueta.toUpperCase())}</text>` +
@@ -95,12 +95,13 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
     `<text x="${sello.x}" y="${sello.y + 15}" text-anchor="middle" font-family="${SERIF}" font-size="${d.precio >= 100000 ? 36 : 42}" font-weight="700" fill="${papel}">${escapar(formatoPrecio(d.precio))}</text>`,
     columna(filas.slice(0, mitad), 130),
     columna(filas.slice(mitad), 580),
-    `<line x1="110" y1="1150" x2="${ANCHO - 110}" y2="1150" stroke="${detalle}" stroke-width="2"/>`,
-    encajar(r.qrSvg, 104, 1168, 132),
-    `<text x="262" y="1218" font-family="${SERIF}" font-size="34" font-weight="700" fill="${tinta}">Encargos</text>`,
+    `<line x1="110" y1="1124" x2="${ANCHO - 110}" y2="1124" stroke="${detalle}" stroke-width="2"/>`,
+    // 172 px: con 132 no se leía desde la pantalla de un celular (prueba del CEO, 2026-09-12).
+    encajar(r.qrSvg, 100, 1136, 172),
+    `<text x="304" y="1200" font-family="${SERIF}" font-size="36" font-weight="700" fill="${tinta}">Encargos</text>`,
     ...contacto.map(
       (linea, i) =>
-        `<text x="262" y="${1256 + i * 32}" font-family="${SANS}" font-size="24" fill="${tinta}">${escapar(linea)}</text>`,
+        `<text x="304" y="${1242 + i * 36}" font-family="${SANS}" font-size="26" fill="${tinta}">${escapar(linea)}</text>`,
     ),
     '</svg>',
   ].join('');

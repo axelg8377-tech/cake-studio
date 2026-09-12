@@ -17,11 +17,12 @@ export function normalizarTelefonoAR(telefono: string): string {
   return d.length === 10 ? `549${d}` : d;
 }
 
+/**
+ * Para el QR va sin `texto`: el mensaje prearmado casi duplicaba los módulos y el QR del flyer no se
+ * leía desde la pantalla de un celular. Con el número solo, el código es mucho menos denso.
+ */
 export function urlWhatsApp(telefono: string, texto?: string): string | null {
   const numero = normalizarTelefonoAR(telefono);
   if (numero.length < 8) return null;
   return `https://wa.me/${numero}${texto ? `?text=${encodeURIComponent(texto)}` : ''}`;
 }
-
-/** Corto a propósito: el QR crece con cada letra y un QR chico con muchos módulos no se lee. */
-export const MENSAJE_PEDIDO = 'Hola! Vi tu torta y quiero encargar una';
