@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarTamano, guardarTamano } from '../datos/catalogo';
 import { db } from '../db';
@@ -75,7 +76,7 @@ function EditorTamano({ inicial, siguienteOrden }: { inicial?: Tamano; siguiente
   }
 
   async function borrar() {
-    if (!inicial || !confirm(`¿Borrar el tamaño ${inicial.nombre}?`)) return;
+    if (!inicial || !(await confirmar({ titulo: `¿Borrar el tamaño ${inicial.nombre}?`, aceptar: 'Borrar', peligro: true }))) return;
     if (await eliminarTamano(inicial.id!)) ir('mas/tamanos');
     else setError('Es el único tamaño: sin tamaños no se puede armar ninguna torta.');
   }

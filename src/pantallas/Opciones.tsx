@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarOpcion, guardarOpcion, leerCatalogo } from '../datos/catalogo';
 import { costoOpcion, NOMBRE_TIPO, type Catalogo } from '../lib/costos';
@@ -144,7 +145,16 @@ function EditorOpcion({ inicial, cat }: { inicial?: Opcion; cat: Catalogo }) {
   }
 
   async function borrar() {
-    if (!inicial || !confirm(`¿Borrar ${inicial.nombre}? Las tortas ya guardadas no cambian.`)) return;
+    if (
+      !inicial ||
+      !(await confirmar({
+        titulo: `¿Borrar ${inicial.nombre}?`,
+        mensaje: 'Las tortas ya guardadas no cambian.',
+        aceptar: 'Borrar',
+        peligro: true,
+      }))
+    )
+      return;
     await eliminarOpcion(inicial.id!);
     ir('mas/opciones');
   }

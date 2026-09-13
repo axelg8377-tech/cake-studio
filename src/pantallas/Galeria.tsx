@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, Miniatura, Pantalla } from '../componentes/ui';
 import { CATEGORIAS_IMAGEN, marcarPrincipal, subirFotos } from '../datos/imagenes';
 import { db } from '../db';
@@ -104,8 +105,14 @@ export default function Galeria() {
               <button
                 type="button"
                 className="boton boton-chico boton-peligro"
-                onClick={() => {
-                  if (confirm('¿Borrar esta foto?')) db.imagenes.delete(img.id!);
+                onClick={async () => {
+                  const ok = await confirmar({
+                    titulo: '¿Borrar esta foto?',
+                    mensaje: 'Los flyers que ya enviaste no cambian.',
+                    aceptar: 'Borrar',
+                    peligro: true,
+                  });
+                  if (ok) db.imagenes.delete(img.id!);
                 }}
               >
                 Borrar

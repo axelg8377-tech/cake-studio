@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, Aviso, Pantalla } from '../componentes/ui';
 import { db } from '../db';
 import { armarCopia, DIAS_AVISO, leerCopia, marcarCopia, restaurarCopia } from '../lib/backup';
@@ -39,7 +40,13 @@ export default function Copia() {
       const t = copia.tablas;
       const cuantos = (n: number, uno: string, varios: string) => `${n} ${n === 1 ? uno : varios}`;
       const detalle = `${cuantos(t.tortas.length, 'torta', 'tortas')}, ${cuantos(t.ingredientes.length, 'ingrediente', 'ingredientes')}, ${cuantos(t.clientes.length, 'cliente', 'clientes')} y ${cuantos(t.imagenes.length, 'foto', 'fotos')}`;
-      if (!confirm(`Esto reemplaza TODOS tus datos por los de la copia del ${fechaCorta(copia.creada)} (${detalle}). Lo que cargaste después se pierde. ¿Seguir?`)) {
+      const ok = await confirmar({
+        titulo: '¿Reemplazar todos tus datos?',
+        mensaje: `Se cargan los de la copia del ${fechaCorta(copia.creada)}: ${detalle}. Lo que cargaste después de esa fecha se pierde.`,
+        aceptar: 'Reemplazar',
+        peligro: true,
+      });
+      if (!ok) {
         return setEstado({ texto: '', tipo: '' });
       }
       await restaurarCopia(copia);

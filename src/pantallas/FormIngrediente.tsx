@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState, type FormEvent } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Pantalla } from '../componentes/ui';
 import { crearIngrediente, editarIngrediente, eliminarIngrediente } from '../datos/ingredientes';
 import { db } from '../db';
@@ -84,7 +85,16 @@ export default function FormIngrediente({ id }: { id?: number }) {
   }
 
   async function borrar() {
-    if (!existente || !confirm(`¿Borrar ${existente.nombre}? También se borra su historial de precios.`)) return;
+    if (
+      !existente ||
+      !(await confirmar({
+        titulo: `¿Borrar ${existente.nombre}?`,
+        mensaje: 'También se borra su historial de precios.',
+        aceptar: 'Borrar',
+        peligro: true,
+      }))
+    )
+      return;
     const resultado = await eliminarIngrediente(existente.id!);
     if (resultado.ok) ir('ingredientes');
     else setError(`No se puede borrar: está en ${resultado.usadoEn.join(', ')}. Sacalo de esas recetas primero.`);

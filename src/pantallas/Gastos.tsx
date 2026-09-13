@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarGasto, guardarGasto } from '../datos/catalogo';
 import { db } from '../db';
@@ -83,7 +84,7 @@ function EditorGasto({ inicial }: { inicial?: Gasto }) {
   }
 
   async function borrar() {
-    if (!inicial || !confirm(`¿Borrar ${inicial.nombre}?`)) return;
+    if (!inicial || !(await confirmar({ titulo: `¿Borrar ${inicial.nombre}?`, aceptar: 'Borrar', peligro: true }))) return;
     const resultado = await eliminarGasto(inicial.id!);
     if (resultado.ok) ir('mas/gastos');
     else setError(`No se puede borrar: lo usa ${resultado.usadoEn.join(', ')}. Sacalo de esas opciones primero.`);

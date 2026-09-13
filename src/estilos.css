@@ -87,6 +87,27 @@ a { color: inherit; }
 .boton-secundario:active { background: var(--linea); }
 .boton-peligro { background: transparent; color: var(--sube); border: 1px solid currentColor; }
 .boton-peligro:active { background: var(--sube-fondo); }
+.boton-borrar { background: var(--sube); color: #FFFFFF; }
+.boton-borrar:active { background: #862E21; }
+
+/* ── Diálogo de confirmación (componentes/confirmar.ts) ── */
+.dialogo {
+  width: min(420px, calc(100vw - 32px));
+  padding: 22px 20px 18px;
+  border: 1px solid var(--linea);
+  border-top: 4px solid var(--acento);
+  border-radius: 16px;
+  background: var(--superficie);
+  color: var(--tinta);
+  box-shadow: 0 12px 40px rgb(59 42 34 / .25);
+}
+.dialogo::backdrop { background: rgb(59 42 34 / .45); }
+.dialogo h2 { margin: 0 0 8px; font-family: var(--titulos); font-size: 22px; line-height: 1.25; }
+.dialogo p { margin: 0 0 20px; color: var(--suave); line-height: 1.45; }
+.dialogo-botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.dialogo[open] { animation: dialogo-entra .15s ease-out; }
+@keyframes dialogo-entra { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .dialogo[open] { animation: none; } }
 
 /* ── Formularios ── */
 .formulario { display: grid; gap: 14px; }

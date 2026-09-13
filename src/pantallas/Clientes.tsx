@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarCliente, guardarCliente } from '../datos/clientes';
 import { db } from '../db';
@@ -99,8 +100,13 @@ function Formulario({ inicial, tortas }: { inicial?: Cliente; tortas: Torta[] })
 
   async function borrar() {
     if (!inicial) return;
-    const aviso = tortas.length > 0 ? ` Sus ${tortas.length} tortas quedan en el historial, sin cliente.` : '';
-    if (!confirm(`¿Borrar a ${inicial.nombre}?${aviso}`)) return;
+    const ok = await confirmar({
+      titulo: `¿Borrar a ${inicial.nombre}?`,
+      mensaje: tortas.length > 0 ? `Sus ${tortas.length} tortas quedan en el historial, sin cliente.` : undefined,
+      aceptar: 'Borrar',
+      peligro: true,
+    });
+    if (!ok) return;
     await eliminarCliente(inicial.id!);
     ir('mas/clientes');
   }

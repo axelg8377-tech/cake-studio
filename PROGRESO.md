@@ -216,7 +216,17 @@ El CEO pidió 4 correcciones antes de la IA. F1 y T18 siguen pendientes.
 - **No verificado:** barras de la foto en el navegador de prueba. La foto subida por agent-browser quedó con miniatura
   vacía y "Guardando la foto…" colgado (pasa antes de llegar al código nuevo; sin diagnosticar). El cálculo del encuadre
   está en test. **Lo revisa el CEO en el teléfono.**
-- Publicado con OK del CEO ("haz deploy").
+- Publicado con OK del CEO ("haz deploy") en `de3c170`. El CEO lo revisó en el teléfono: bien.
+
+### Sesión 5, segunda parte — confirmaciones con diseño propio
+- Pedido del CEO: el `confirm()` nativo ("axelg8377-tech.github.io dice") no va. `componentes/confirmar.ts`: `<dialog>` con
+  `showModal`, texto por `textContent`, botón con el verbo ("Borrar", "Quitar piso", "Sí, la hice", "Reemplazar"), rojo
+  (`.boton-borrar`) si borra o pisa datos, Cancelar con el foco, Esc / atrás / tocar afuera cancelan.
+- Reemplazados los 10 `confirm()`: Constructor (quitar piso, ya la hice, borrar torta), Copia (restaurar), Clientes,
+  Gastos, Tamaños, Opciones, FormIngrediente, Galería. No queda ningún `confirm`/`alert`/`prompt` nativo.
+- Verificación: build limpio · `npm test` 84/84 · Chromium 412 px: diálogo de quitar piso abierto, foco en Cancelar,
+  Esc lo cierra y el piso queda.
+- Con esto el CEO da por cerradas las correcciones. **Pendiente:** F1 (IA para pedidos) y T18.
 
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.

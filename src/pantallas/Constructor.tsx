@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
+import { confirmar } from '../componentes/confirmar';
 import { Ayuda, Aviso, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarTorta, guardarTorta, leerCatalogo } from '../datos/catalogo';
 import { db } from '../db';
@@ -143,9 +144,15 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
     setMensaje(null);
   }
 
-  function quitarPiso() {
+  async function quitarPiso() {
     if (pisos.length < 2) return;
-    if (!confirm(`¿Quitar el piso ${activo + 1}? Se pierde lo que elegiste en ese piso.`)) return;
+    const ok = await confirmar({
+      titulo: `¿Quitar el piso ${activo + 1}?`,
+      mensaje: 'Se pierde lo que elegiste en ese piso.',
+      aceptar: 'Quitar piso',
+      peligro: true,
+    });
+    if (!ok) return;
     setPisos((prev) => prev.filter((_, i) => i !== activo));
     setActivo(Math.max(0, activo - 1));
   }
@@ -155,7 +162,15 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
     setMensaje(null);
     if (!hayElegidas) return setError('Elegí al menos una masa, un relleno, una cobertura o un ingrediente con su cantidad.');
     const primeraVezHecha = estado === 'realizada' && (comoNueva || inicial?.estado !== 'realizada');
-    if (primeraVezHecha && !confirm('Se descuenta del stock lo que lleva esta torta. ¿Marcarla como hecha?')) return;
+    if (
+      primeraVezHecha &&
+      !(await confirmar({
+        titulo: '¿Marcarla como hecha?',
+        mensaje: 'Se descuenta del stock lo que lleva esta torta.',
+        aceptar: 'Sí, la hice',
+      }))
+    )
+      return;
     setGuardando(true);
     try {
       const datos = {
@@ -189,8 +204,13 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
 
   async function borrar() {
     if (!inicial) return;
-    const aviso = inicial.estado === 'realizada' ? ' El stock que se descontó no vuelve.' : '';
-    if (!confirm(`¿Borrar ${inicial.nombre}?${aviso}`)) return;
+    const ok = await confirmar({
+      titulo: `¿Borrar ${inicial.nombre}?`,
+      mensaje: inicial.estado === 'realizada' ? 'El stock que se descontó no vuelve.' : undefined,
+      aceptar: 'Borrar',
+      peligro: true,
+    });
+    if (!ok) return;
     await eliminarTorta(inicial.id!);
     ir('tortas');
   }
