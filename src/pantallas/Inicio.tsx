@@ -1,21 +1,26 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Aviso, Ayuda, Pantalla, Variacion } from '../componentes/ui';
-import { ultimosCambios } from '../datos/ingredientes';
+import { leerCatalogo } from '../datos/catalogo';
 import { db } from '../db';
-import { variacion } from '../lib/costos';
+import { avisoCopia, DIAS_AVISO } from '../lib/backup';
+import { pesos, pesosConSigno } from '../lib/formato';
+import { aumentos, resumenDelMes, revisarPrecios } from '../lib/resumen';
 
 export default function Inicio() {
   const config = useLiveQuery(() => db.config.get('unica'), []);
   const ingredientes = useLiveQuery(() => db.ingredientes.toArray(), []);
   const historial = useLiveQuery(() => db.preciosHistorial.toArray(), []);
-  if (!ingredientes || !historial) return null;
+  const tortas = useLiveQuery(() => db.tortas.toArray(), []);
+  const cat = useLiveQuery(() => leerCatalogo(), []);
+  if (!ingredientes || !historial || !tortas || !cat) return null;
 
-  const nombres = new Map(ingredientes.map((i) => [i.id!, i.nombre]));
-  const aumentos = [...ultimosCambios(historial).values()]
-    .map((h) => ({ id: h.ingredienteId, nombre: nombres.get(h.ingredienteId), ...variacion(h.precioAnterior, h.precioNuevo) }))
-    .filter((a) => a.nombre !== undefined && a.pct !== null && a.pct > 0)
-    .sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0))
-    .slice(0, 3);
+  const subas = aumentos(historial, ingredientes);
+  const umbral = config?.umbralAlerta ?? 20;
+  const fuertes = subas.filter((a) => a.pct > umbral);
+  const mes = resumenDelMes(tortas);
+  const nombreMes = new Date().toLocaleDateString('es-AR', { month: 'long' });
+  const aRevisar = revisarPrecios(tortas, cat).filter((r) => r.conviene).length;
+  const copia = avisoCopia(config?.ultimoBackup, tortas.length > 0 || historial.length > 0);
   const deEjemplo = ingredientes.filter((i) => i.notas?.startsWith('Precio de ejemplo')).length;
 
   return (
@@ -34,12 +39,59 @@ export default function Inicio() {
         <p>Cada pantalla tiene su explicación arriba. Se cierra con "Entendido" y se vuelve a ver desde Más.</p>
       </Ayuda>
 
+      {copia && (
+        <Aviso alerta>
+          {copia === 'nunca'
+            ? 'Todavía no hiciste una copia de seguridad: si perdés el teléfono, se pierde todo.'
+            : `Pasaron más de ${DIAS_AVISO} días desde tu última copia de seguridad.`}{' '}
+          <a href="#/mas/copia">Hacer copia</a>
+        </Aviso>
+      )}
+
+      {fuertes.length > 0 && (
+        <Aviso alerta>
+          Subieron más del {umbral}%: {fuertes.slice(0, 3).map((a) => a.nombre).join(', ')}
+          {fuertes.length > 3 && ` y ${fuertes.length - 3} más`}. <a href="#/ingredientes">Ver ingredientes</a>
+        </Aviso>
+      )}
+
+      {aRevisar > 0 && (
+        <Aviso alerta>
+          {aRevisar === 1 ? 'Una torta hecha hoy te costaría' : `${aRevisar} tortas hechas hoy te costarían`} más de lo que
+          cobraste.{' '}
+          <a href="#/mas/revisar-precios">Revisar precios</a>
+        </Aviso>
+      )}
+
       {deEjemplo > 0 && (
         <Aviso alerta>
           {deEjemplo} de {ingredientes.length} ingredientes tienen precio de ejemplo. Empezá por actualizar los que
           más usás.
         </Aviso>
       )}
+
+      <section className="grupo-lista">
+        <h2>Este mes · {nombreMes}</h2>
+        <div className="cifras">
+          <div className="cifra">
+            <span>Tortas hechas</span>
+            <b>{mes.tortas}</b>
+          </div>
+          <div className="cifra principal">
+            <span>Ventas</span>
+            <b>{pesos(mes.ventas)}</b>
+          </div>
+          <div className="cifra">
+            <span>Costos</span>
+            <b>{pesos(mes.costos)}</b>
+          </div>
+          <div className="cifra">
+            <span>Ganancia</span>
+            <b className={mes.ganancia < 0 ? 'sube' : 'baja'}>{mes.ganancia < 0 ? pesosConSigno(mes.ganancia) : pesos(mes.ganancia)}</b>
+          </div>
+        </div>
+        {mes.tortas === 0 && <p className="vacio">Se completa cuando marcás una torta como hecha.</p>}
+      </section>
 
       <div className="accesos">
         <a className="boton" href="#/ingredientes">
@@ -52,11 +104,11 @@ export default function Inicio() {
 
       <section className="bloque">
         <h2>Mayores aumentos</h2>
-        {aumentos.length === 0 ? (
+        {subas.length === 0 ? (
           <p className="vacio">Todavía no hubo aumentos. Aparecen cuando actualices un precio.</p>
         ) : (
           <ul className="lista">
-            {aumentos.map((a) => (
+            {subas.slice(0, 3).map((a) => (
               <li key={a.id}>
                 <a className="fila" href={`#/ingredientes/${a.id}`}>
                   <b>{a.nombre}</b>

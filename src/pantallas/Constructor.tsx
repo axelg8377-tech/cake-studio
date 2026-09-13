@@ -48,8 +48,10 @@ function elegidosDe(sel: Seleccion): Elegidos {
 
 function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | null; inicial?: Torta }) {
   const ultimas = useLiveQuery(() => db.tortas.orderBy('fecha').reverse().limit(10).toArray(), []);
+  const clientes = useLiveQuery(() => db.clientes.orderBy('nombre').toArray(), []);
   const margenDefecto = config?.margenDefecto ?? 50;
   const [nombre, setNombre] = useState(inicial?.nombre ?? '');
+  const [clienteId, setClienteId] = useState<number | undefined>(inicial?.clienteId);
   const [modo, setModo] = useState<Modo>(inicial?.seleccion.ingredientes?.length ? 'ingredientes' : 'opciones');
   const [tamanoId, setTamanoId] = useState<number | undefined>(inicial?.seleccion.tamanoId);
   const [elegidos, setElegidos] = useState<Elegidos>(inicial ? elegidosDe(inicial.seleccion) : NADA);
@@ -131,7 +133,14 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
     if (primeraVezHecha && !confirm('Se descuenta del stock lo que lleva esta torta. ¿Marcarla como hecha?')) return;
     setGuardando(true);
     try {
-      const datos = { nombre: comoNueva ? `${nombre.trim() || 'Torta'} (copia)` : nombre, seleccion: sel, margen: margenNum, precioFinal: final, estado };
+      const datos = {
+        nombre: comoNueva ? `${nombre.trim() || 'Torta'} (copia)` : nombre,
+        seleccion: sel,
+        margen: margenNum,
+        precioFinal: final,
+        estado,
+        clienteId,
+      };
       const guardadaId = await guardarTorta(datos, comoNueva ? undefined : inicial?.id);
       if (comoNueva) return ir(`tortas/${guardadaId}`);
       if (inicial) {
@@ -142,6 +151,7 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
         `Guardada ${estado === 'realizada' ? 'como hecha' : 'como borrador'}: ${nombre.trim() || 'Torta sin nombre'}, ${pesos(s.precioFinal)}.`,
       );
       setNombre('');
+      setClienteId(undefined);
       setElegidos(NADA);
       setLibres([]);
       setPrecioFinal('');
@@ -221,6 +231,29 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
           onChange={(e) => setNombre(e.target.value)}
         />
       </label>
+
+      <label className="campo" htmlFor="torta-cliente">
+        <span>
+          Cliente <small>opcional</small>
+        </span>
+        <select
+          id="torta-cliente"
+          value={clienteId ?? ''}
+          onChange={(e) => setClienteId(e.target.value ? Number(e.target.value) : undefined)}
+        >
+          <option value="">Sin cliente</option>
+          {clientes?.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nombre}
+            </option>
+          ))}
+        </select>
+      </label>
+      {clientes?.length === 0 && (
+        <p className="ayuda">
+          Los clientes se cargan en <a href="#/mas/clientes/nuevo">Más › Clientes</a>.
+        </p>
+      )}
 
       <section className="paso">
         <h2 className="rotulo">Cómo la armás</h2>

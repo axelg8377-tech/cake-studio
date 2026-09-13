@@ -4,7 +4,12 @@ import FichaIngrediente from './pantallas/FichaIngrediente';
 import FormIngrediente from './pantallas/FormIngrediente';
 import Ingredientes from './pantallas/Ingredientes';
 import Inicio from './pantallas/Inicio';
+import { Clientes, FormCliente } from './pantallas/Clientes';
 import Constructor from './pantallas/Constructor';
+import Copia from './pantallas/Copia';
+import Historial from './pantallas/Historial';
+import RevisarPrecios from './pantallas/RevisarPrecios';
+import Tarjeta from './pantallas/Tarjeta';
 import Flyer from './pantallas/Flyer';
 import Galeria from './pantallas/Galeria';
 import { FormGasto, Gastos } from './pantallas/Gastos';
@@ -27,6 +32,11 @@ function Contenido({ ruta }: { ruta: string[] }) {
   if (seccion === 'flyer') return <Flyer key={id ?? 'libre'} tortaId={id ? Number(id) : undefined} />;
   if (seccion === 'mas') {
     if (id === 'galeria') return <Galeria />;
+    if (id === 'historial') return <Historial />;
+    if (id === 'clientes') return accion ? <FormCliente key={accion} id={idDe(accion)} /> : <Clientes />;
+    if (id === 'revisar-precios') return <RevisarPrecios />;
+    if (id === 'tarjeta') return <Tarjeta />;
+    if (id === 'copia') return <Copia />;
     if (id === 'gastos') return accion ? <FormGasto key={accion} id={idDe(accion)} /> : <Gastos />;
     if (id === 'tamanos') return accion ? <FormTamano key={accion} id={idDe(accion)} /> : <Tamanos />;
     if (id === 'opciones') return accion ? <FormOpcion key={accion} id={idDe(accion)} /> : <Opciones />;

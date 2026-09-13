@@ -9,6 +9,7 @@ import { cartaDelCatalogo } from './desdeTorta';
 import { flyerCarta, type DatosCarta } from './plantillas/carta';
 import { flyerDulce } from './plantillas/dulce';
 import { ALTO, ANCHO, flyerElegante, type DatosFlyer, type RecursosFlyer } from './plantillas/elegante';
+import { ALTO_A4, ALTO_TARJETA, ANCHO_A4, ANCHO_TARJETA, hojaA4, tarjeta } from './plantillas/tarjeta';
 import { svgQrMarca } from './qrMarca';
 import { PALETA_PAPEL, PALETA_ROSA, type Paleta } from './svg';
 
@@ -121,6 +122,59 @@ describe.each(PLANTILLAS)('flyer %s', (nombre, paleta, dibujar) => {
 
   it('sin foto también se dibuja y el QR se lee', async () => {
     expect(await leerQR((await flyerPng(false)).png)).toBe(url);
+  });
+});
+
+describe('tarjeta de recomendación', () => {
+  const url = urlWhatsApp(NEGOCIO.telefono, MENSAJE_QR)!;
+  const png = () =>
+    sharp(
+      Buffer.from(
+        tarjeta(
+          {
+            nombre: 'Dulce Hogar <pastelería>',
+            frase: 'Tortas caseras para tus momentos más dulces, hechas con amor',
+            telefono: NEGOCIO.telefono,
+            instagram: '@dulcehogar',
+          },
+          { paleta: PALETA_PAPEL, qrSvg: svgQrMarca(url, PALETA_PAPEL), fuenteTitulos: null },
+        ),
+      ),
+    )
+      .png()
+      .toBuffer();
+
+  it('sale en 9 × 5 cm a 300 dpi, con texto escapado, y el QR se lee', async () => {
+    const imagen = await png();
+    mkdirSync('salida-pruebas', { recursive: true });
+    writeFileSync('salida-pruebas/tarjeta.png', imagen);
+    const meta = await sharp(imagen).metadata();
+    expect([meta.width, meta.height]).toEqual([ANCHO_TARJETA, ALTO_TARJETA]);
+    expect(await leerQR(imagen)).toBe(url);
+  });
+
+  it.each([531, 425])('el QR se lee con la tarjeta a %i px de ancho (150 y 120 dpi)', async (ancho) => {
+    const chica = await sharp(await png()).resize(ancho).jpeg({ quality: 75 }).toBuffer();
+    expect(await leerQR(chica)).toBe(url);
+  });
+
+  it('la hoja A4 trae 10 tarjetas de 9 × 5 cm y el QR de la última se lee', async () => {
+    const svg = tarjeta(
+      { nombre: 'Dulce Hogar', frase: 'Tortas caseras', telefono: NEGOCIO.telefono, instagram: 'dulcehogar' },
+      { paleta: PALETA_PAPEL, qrSvg: svgQrMarca(url, PALETA_PAPEL), fuenteTitulos: null },
+    );
+    const hoja = hojaA4(svg);
+    // qr-arte.js también dibuja con <use>: se cuentan solo los que repiten la tarjeta.
+    expect(hoja.match(/<use href="#tarjeta"/g)).toHaveLength(10);
+    const imagen = await sharp(Buffer.from(hoja)).png().toBuffer();
+    writeFileSync('salida-pruebas/tarjetas-a4.png', imagen);
+    const meta = await sharp(imagen).metadata();
+    expect([meta.width, meta.height]).toEqual([ANCHO_A4, ALTO_A4]);
+    // Última tarjeta: columna 2, fila 5.
+    const left = Math.round((ANCHO_A4 - 2 * ANCHO_TARJETA) / 2) + ANCHO_TARJETA;
+    const top = Math.round((ALTO_A4 - 5 * ALTO_TARJETA) / 2) + 4 * ALTO_TARJETA;
+    const celda = await sharp(imagen).extract({ left, top, width: ANCHO_TARJETA, height: ALTO_TARJETA }).png().toBuffer();
+    expect(await leerQR(celda)).toBe(url);
   });
 });
 

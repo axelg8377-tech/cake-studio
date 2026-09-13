@@ -73,6 +73,7 @@ export type DatosTorta = {
   margen: number;
   precioFinal?: number;
   estado: Torta['estado'];
+  clienteId?: number;
 };
 
 /**
@@ -91,13 +92,16 @@ export async function guardarTorta(datos: DatosTorta, id?: number, base: BaseDat
         if (stock !== undefined) await base.ingredientes.update(ingredienteId, { stock: Math.max(0, stock - usado) });
       }
     }
+    const ahora = new Date().toISOString();
     const fila: Torta = {
-      fecha: previa?.fecha ?? new Date().toISOString(),
+      fecha: previa?.fecha ?? ahora,
       nombre: datos.nombre.trim() || 'Torta sin nombre',
-      clienteId: previa?.clienteId,
+      clienteId: datos.clienteId,
       seleccion: datos.seleccion,
       snapshot,
       estado: datos.estado,
+      // Las cuentas del mes van por el día en que se hizo, no por el día en que se anotó el borrador.
+      hecha: datos.estado === 'realizada' ? (previa?.estado === 'realizada' ? (previa.hecha ?? previa.fecha) : ahora) : undefined,
     };
     return (await base.tortas.put(previa ? { ...fila, id: previa.id } : fila)) as number;
   });

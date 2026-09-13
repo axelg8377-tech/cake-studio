@@ -92,7 +92,7 @@ export function blobADataUri(blob: Blob): Promise<string> {
   });
 }
 
-function aBase64(bytes: Uint8Array): string {
+export function aBase64(bytes: Uint8Array): string {
   let binario = '';
   // De a trozos: `String.fromCharCode(...bytes)` con 40 KB desborda la pila de argumentos.
   for (let i = 0; i < bytes.length; i += 8192) {

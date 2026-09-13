@@ -134,6 +134,49 @@ Cada sesión lee esto primero, después la tarea que toca en PLAN.md.
   foto; cuenta de la carta). Build limpio. PNG de las tres revisados a ojo.
 - **No verificado:** Android real y escaneo del QR de Dulce y Carta con otro teléfono.
 
+## Sesión 4 — 2026-09-13 (Opus) · T12 a T16 hechos, sin commitear
+
+Recorte avisado al CEO al arrancar: esta sesión T12–T16; **F1, T17 y T18 quedan para la sesión 5**.
+
+- **T12** `flyer/plantillas/tarjeta.ts`: tarjeta 1063×591 (9×5 cm a 300 dpi), logo, nombre (achica hasta 2 líneas),
+  frase, WhatsApp, Instagram y QR 340 px sobre cuadrado de papel. **No usa la hoja de `cartel.js`**: es vertical
+  A6–A4 con NFC y pie de Pizarrita; se toma el método (QR encajado, texto que achica). Frase a 32 px = 7,7 pt impreso.
+  - Pedido del CEO a mitad de sesión: **`hojaA4()`**, 10 tarjetas (2×5) pegadas con marcas de corte y pie "imprimir al
+    100%". La tarjeta se dibuja una vez y se repite con `<use href="#tarjeta">`.
+  - `pantallas/Tarjeta.tsx` (Más › Tarjeta): datos del negocio compartidos con el flyer, "Descargar hoja A4",
+    "Enviar tarjeta", "Descargar tarjeta".
+- **T13** `pantallas/Historial.tsx` (hechas / borradores, por mes, total vendido) y `pantallas/Clientes.tsx` (lista con
+  buscador, alta/edición, sus tortas, "Escribirle por WhatsApp", borrar). `datos/clientes.ts`: borrar un cliente deja
+  sus tortas sin cliente. Constructor: selector "Cliente (opcional)"; `DatosTorta.clienteId`.
+- `Torta.hecha?` nuevo: fecha en que pasó a realizada, una sola vez. Las cuentas del mes van por ese día (las tortas
+  viejas usan `fecha`).
+- **T14** `lib/resumen.ts` (`resumenDelMes`, `aumentos`). Inicio: cifras del mes (tortas, ventas, costos, ganancia),
+  alerta de ingredientes con suba `> umbralAlerta` (3 nombres + "y N más"), aviso de tortas a revisar, top 3 aumentos.
+- **T15** `revisarPrecios` + `pantallas/RevisarPrecios.tsx`. **Regla elegida:** avisa si el costo de hoy es mayor y lo
+  que cobró queda debajo del precio sugerido de hoy con el mismo margen. Si se borró una opción, ingrediente o tamaño,
+  la torta sale "no se puede comparar" (el costo de hoy mentiría para abajo). No cambia nada.
+- **T16** `lib/backup.ts` + `pantallas/Copia.tsx` (Más › Copia de seguridad). JSON con las 9 tablas y fotos en base64
+  (BKP-01), nombre con fecha y hora (no pisa copias), **sin `claveIA`** y al restaurar se conserva la del teléfono.
+  `leerCopia` valida todo antes de tocar la base; `restaurarCopia` decodifica fotos antes y reemplaza en una
+  transacción. `ultimoBackup` se marca solo si el archivo salió (cancelar no cuenta). Aviso en Inicio: "nunca" si hay
+  tortas o cambios de precio, o ≥ 14 días. La pantalla avisa que el archivo tiene teléfonos de clientes.
+  BKP-02/03/06 (cifrado, inmutabilidad, credenciales) no aplican a un archivo local sin servidor: decisión, no olvido.
+- Más: 9 secciones con link; "Próximas" queda solo "Pedido con IA".
+
+### Verificación
+- `npm test` **79/79** (nuevos: `lib/backup.test.ts` ida y vuelta con foto por bytes y 6 rechazos, `lib/resumen.test.ts`,
+  tarjeta y hoja A4 en `flyer.test.ts`). Build limpio. oxlint: solo avisos viejos en `lib/qr/` copiados.
+- QR de la tarjeta leído con jsqr a 1063, 531 y 425 px (JPEG 75), y el de la última celda de la hoja A4.
+  PNG revisados a ojo: `salida-pruebas/tarjeta.png`, `tarjetas-a4.png`.
+- Chromium con `vite preview` a 412 px: alta de cliente → torta con cliente "Ya la hice" → precios +30% → Inicio
+  muestra alerta, aviso de copia y de revisar; Revisar precios +16% "conviene"; Historial y ficha del cliente ok.
+  Copia (119 KB con foto) → `deleteDatabase` → app vacía → restaurar → cliente y foto 1063×591 vuelven, "Última copia".
+- Cicatriz de la prueba: `deleteDatabase` con la app abierta queda **bloqueado** y encola toda apertura siguiente (la
+  app se cuelga en "Armando la copia…"). Borrar desde una URL del mismo origen sin la app (`/manifest.webmanifest`).
+- **No verificado:** Android real, impresión real de la hoja A4 a 100% y escaneo del QR impreso, compartir el JSON
+  en Android (si `canShare` no acepta JSON cae a descarga), restaurar eligiendo el archivo desde el selector del teléfono.
+- **Falta:** commit + push con OK del CEO. Sesión 5: F1 (cargar skill `claude-api` antes), T17, T18.
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

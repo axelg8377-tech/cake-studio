@@ -111,6 +111,8 @@ export interface Torta {
   seleccion: Seleccion;
   snapshot: Snapshot;
   estado: 'borrador' | 'realizada';
+  /** Cuándo pasó a realizada. Las tortas de antes no lo tienen: para ellas vale `fecha`. */
+  hecha?: string;
 }
 
 export interface Cliente {
