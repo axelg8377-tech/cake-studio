@@ -20,11 +20,14 @@ export default function Ingredientes() {
   if (!ingredientes) return null;
 
   const umbral = config?.umbralAlerta ?? 20;
-  const alertas = ingredientes.flatMap((ing) => {
-    const c = cambios.get(ing.id!);
-    const pct = c && variacion(c.precioAnterior, c.precioNuevo).pct;
-    return pct != null && pct >= umbral ? [{ id: ing.id!, nombre: ing.nombre, pct }] : [];
-  });
+  // Mismo criterio que Inicio: "subió más del umbral".
+  const alertas = ingredientes
+    .flatMap((ing) => {
+      const c = cambios.get(ing.id!);
+      const pct = c && variacion(c.precioAnterior, c.precioNuevo).pct;
+      return pct != null && pct > umbral ? [{ id: ing.id!, nombre: ing.nombre, pct }] : [];
+    })
+    .sort((a, b) => b.pct - a.pct);
 
   const texto = sinTildes(busqueda.trim());
   const visibles = ingredientes.filter((i) => sinTildes(i.nombre).includes(texto));
@@ -46,17 +49,24 @@ export default function Ingredientes() {
         <p>Acá están los precios de lo que comprás. Todo el cálculo de las tortas sale de estos números.</p>
         <ul>
           <li>Tocá un ingrediente para cambiarle el precio. Se guarda el anterior y ves cuánto subió.</li>
-          <li>En rojo lo que aumentó, en verde lo que bajó. Si algo sube más de 20%, aparece un aviso arriba.</li>
+          <li>En rojo lo que aumentó, en verde lo que bajó. Si algo sube más de {umbral}%, aparece un aviso arriba.</li>
           <li>"Agregar" carga uno nuevo: cuánto pagaste y por cuánto (ej: $4.000 por 12 huevos).</li>
         </ul>
       </Ayuda>
 
-      {alertas.map((a) => (
-        <Aviso key={a.id} alerta>
-          <a href={`#/ingredientes/${a.id}`}>{a.nombre}</a> aumentó {Math.round(a.pct)}% desde la última
-          actualización. Conviene revisar el precio de las tortas que lo usan.
+      {alertas.length > 0 && (
+        <Aviso alerta>
+          {alertas.length === 1 ? 'Subió más del ' : `${alertas.length} ingredientes subieron más del `}
+          {umbral}% desde la última actualización:{' '}
+          {alertas.map((a, i) => (
+            <span key={a.id}>
+              {i > 0 && ', '}
+              <a href={`#/ingredientes/${a.id}`}>{a.nombre}</a> {Math.round(a.pct)}%
+            </span>
+          ))}
+          . Mirá <a href="#/mas/revisar-precios">Revisar precios</a>.
         </Aviso>
-      ))}
+      )}
 
       <label className="buscador" htmlFor="buscar-ingrediente">
         <span className="sr">Buscar ingrediente</span>

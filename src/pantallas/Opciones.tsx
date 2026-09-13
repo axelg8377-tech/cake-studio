@@ -50,11 +50,16 @@ export function Opciones() {
         </ul>
       </Ayuda>
 
-      <p className="vacio">
-        Costo de cada una para {base ? `el molde de ${base.nombre}` : 'la receta base'}. Al armar la torta se ajusta al
-        tamaño elegido.
-      </p>
-      {opciones.length === 0 && <p className="vacio">Todavía no hay opciones. Tocá Agregar.</p>}
+      {opciones.length === 0 ? (
+        <p className="vacio">
+          Todavía no hay opciones. <a href="#/mas/opciones/nuevo">Agregá la primera</a>, por ejemplo tu masa de vainilla.
+        </p>
+      ) : (
+        <p className="vacio">
+          Costo de cada una para {base ? `el molde de ${base.nombre}` : 'la receta base'}. Al armar la torta se ajusta al
+          tamaño elegido.
+        </p>
+      )}
       {TIPOS.map((tipo) => {
         const deTipo = opciones.filter((o) => o.tipo === tipo);
         if (deTipo.length === 0) return null;

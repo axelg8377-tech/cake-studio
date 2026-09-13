@@ -177,6 +177,25 @@ Recorte avisado al CEO al arrancar: esta sesión T12–T16; **F1, T17 y T18 qued
   en Android (si `canShare` no acepta JSON cae a descarga), restaurar eligiendo el archivo desde el selector del teléfono.
 - **Falta:** commit + push con OK del CEO. Sesión 5: F1 (cargar skill `claude-api` antes), T17, T18.
 
+### Sesión 4, segunda parte — commit de T12–T16 y T17 (T17 sin commitear)
+
+- Con OK del CEO: `685ac96` pusheado, Pages verde (47 s). `referencias/` sin trackear quedó afuera a propósito.
+- **T17**, contra `diseno-web.md` (prohibiciones + checklist) y `ui-ux-pro-max/references/pro-rules.md`:
+  - Más: sin sección "Próximas entregas" (`diseno-web.md` prohíbe "próximamente"); secciones en 3 grupos (Tu negocio,
+    Cómo calculás, Tus datos); "Volver a ver las explicaciones" al final.
+  - Ingredientes: un solo aviso con todos los que subieron (antes uno por ingrediente), criterio `> umbral` igual que
+    Inicio (antes `>=`), la ayuda dice el umbral real y lleva a Revisar precios.
+  - FichaIngrediente usa `NoEncontrado`. Opciones vacía: un solo texto con link, no dos.
+  - CSS: respuesta al tocar en chips, fotos, quitar y pestañas (color, sin mover nada), transición 150 ms, apagada con
+    `prefers-reduced-motion`; `aria-disabled` se ve deshabilitado.
+  - **No aplica / decidido no hacer:** modo oscuro (fuera de alcance en PLAN.md); estado de carga (IndexedDB responde en
+    milisegundos, un spinner parpadearía); iconos de emoji (no hay, son SVG).
+- Verificación: `npm test` 79/79 · `tsc -b` limpio · build. Barrido en Chromium a 375 px de las 18 rutas: 0 px de
+  desborde horizontal en todas; controles < 44 px solo las 2 casillas de gastos de "Editar opción", dentro de un label
+  de 44 px. Fuente de títulos verificada relativa en el CSS compilado (`url(../fuentes/…)`), anda bajo `/cake-studio/`.
+- **No verificado:** Android real, texto grande del sistema, tablet horizontal.
+- **Falta:** commit + push de T17 con OK del CEO. Sesión 5: F1 y T18.
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

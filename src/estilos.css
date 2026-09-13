@@ -259,7 +259,18 @@ fieldset.paso { padding: 0; border: 0; }
 }
 .costo-opcion { margin: 0; font-size: 18px; }
 .costo-opcion b { font-family: var(--titulos); font-size: 24px; color: var(--acento); }
-.boton:disabled { opacity: .6; }
+.boton:disabled, .boton[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+
+/* Respuesta al tocar: cambia el color, nunca el tamaño (no mueve lo de al lado). */
+.boton, .chip, .foto-opcion, .boton-quitar, .fila, .nav-item { transition: background-color .15s ease, color .15s ease; }
+.chip:active { background: var(--linea); }
+.chip[aria-pressed="true"]:active { background: var(--suave); }
+.foto-opcion:active { background: var(--linea); }
+.boton-quitar:active { background: var(--sube-fondo); }
+.nav-item:active { background: var(--linea); }
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
 details summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
 
 .subrotulo { font-size: 14px; color: var(--suave); }

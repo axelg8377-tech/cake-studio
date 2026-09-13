@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState, type FormEvent } from 'react';
-import { Ayuda, claseCambio, Pantalla } from '../componentes/ui';
+import { Ayuda, claseCambio, NoEncontrado, Pantalla } from '../componentes/ui';
 import { actualizarPrecio } from '../datos/ingredientes';
 import { db } from '../db';
 import { variacion } from '../lib/costos';
@@ -18,13 +18,7 @@ export default function FichaIngrediente({ id }: { id: number }) {
   const [error, setError] = useState<string | null>(null);
 
   if (ing === undefined || historial === undefined) return null;
-  if (ing === null) {
-    return (
-      <Pantalla titulo="No encontrado" volver="ingredientes">
-        <p className="vacio">Ese ingrediente ya no existe.</p>
-      </Pantalla>
-    );
-  }
+  if (ing === null) return <NoEncontrado volver="ingredientes" />;
 
   const cambios = [...historial].sort((a, b) => b.fecha.localeCompare(a.fecha) || (b.id ?? 0) - (a.id ?? 0));
   const ultimo = cambios[0];
