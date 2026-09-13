@@ -86,6 +86,8 @@ export interface Seleccion {
   extraIds: number[];
   /** Torta armada tocando ingredientes sueltos: cantidades de esta torta, no se escalan por tamaño. */
   ingredientes?: LineaReceta[];
+  /** Pisos de arriba, cada uno con su tamaño y lo suyo. Este objeto es el piso de abajo. */
+  pisos?: Seleccion[];
 }
 
 export interface LineaCosto {

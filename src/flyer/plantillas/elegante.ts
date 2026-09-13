@@ -3,11 +3,13 @@ import {
   escapar,
   estrella,
   formatoPrecio,
+  fotoEncuadrada,
   fuenteFace,
   partir,
   pie,
   SANS,
   SERIF,
+  type Encuadre,
   type Negocio,
   type Paleta,
 } from '../svg';
@@ -28,6 +30,9 @@ export type RecursosFlyer = {
   paleta: Paleta;
   qrSvg: string;
   fotoDataUri: string | null;
+  /** Tamaño real de la foto, para poder correrla y agrandarla dentro del marco. */
+  fotoTam?: { ancho: number; alto: number } | null;
+  encuadre?: Encuadre;
   fuenteTitulos: string | null;
   /** Letra cursiva de la plantilla Dulce. */
   fuenteGuion?: string | null;
@@ -56,7 +61,7 @@ export function flyerElegante(d: DatosFlyer, r: RecursosFlyer): string {
   // El sello va sobre la esquina de la foto y termina antes de la primera etiqueta (y=930).
   const sello = { x: 856, y: 770, radio: 124 };
   const fotoSvg = r.fotoDataUri
-    ? `<image href="${r.fotoDataUri}" x="${foto.x}" y="${foto.y}" width="${foto.ancho}" height="${foto.alto}" preserveAspectRatio="xMidYMid slice" clip-path="url(#fl-foto)"/>`
+    ? fotoEncuadrada(r.fotoDataUri, r.fotoTam, foto, 'fl-foto', r.encuadre)
     : `<rect x="${foto.x}" y="${foto.y}" width="${foto.ancho}" height="${foto.alto}" rx="36" fill="${detalle}"/>`;
 
   const filas = d.detalle.filter((f) => f.valor.trim()).slice(0, 6);

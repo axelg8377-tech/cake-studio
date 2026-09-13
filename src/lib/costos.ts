@@ -59,8 +59,13 @@ export function costoOpcion(op: Opcion, factor: number, cat: Pick<Catalogo, 'ing
   return receta * factor + gastos;
 }
 
-/** Los ids elegidos, en el orden en que se muestran. */
-export function idsElegidos(sel: Seleccion): number[] {
+/** El piso de abajo y los de arriba, en orden. Una torta de un piso devuelve solo `sel`. */
+export function pisosDe(sel: Seleccion): Seleccion[] {
+  return [sel, ...(sel.pisos ?? [])];
+}
+
+/** Los ids elegidos de un piso, en el orden en que se muestran. */
+function idsDelPiso(sel: Seleccion): number[] {
   return [
     sel.masaId,
     ...sel.rellenoIds,
@@ -70,28 +75,38 @@ export function idsElegidos(sel: Seleccion): number[] {
   ].filter((id): id is number => id !== undefined);
 }
 
+/** Los ids elegidos de todos los pisos. */
+export function idsElegidos(sel: Seleccion): number[] {
+  return pisosDe(sel).flatMap(idsDelPiso);
+}
+
 export function calcularTorta(
   sel: Seleccion,
   cat: Catalogo,
   margen: number,
   precioFinal?: number,
 ): Snapshot {
-  const factor = cat.tamanos.get(sel.tamanoId)?.factor ?? 1;
   const lineas: LineaCosto[] = [];
+  const pisos = pisosDe(sel);
 
-  for (const id of idsElegidos(sel)) {
-    const op = cat.opciones.get(id);
-    if (op) lineas.push({ concepto: `${NOMBRE_TIPO[op.tipo]}: ${op.nombre}`, costo: costoOpcion(op, factor, cat) });
-  }
-  for (const linea of sel.ingredientes ?? []) {
-    const ing = cat.ingredientes.get(linea.ingredienteId);
-    if (ing) {
-      lineas.push({
-        concepto: `${ing.nombre} (${mostrarCantidad(linea.cantidad, ing.unidad)})`,
-        costo: costoIngrediente(ing, linea.cantidad),
-      });
+  pisos.forEach((piso, i) => {
+    const factor = cat.tamanos.get(piso.tamanoId)?.factor ?? 1;
+    const prefijo = pisos.length > 1 ? `Piso ${i + 1} · ` : '';
+    for (const id of idsDelPiso(piso)) {
+      const op = cat.opciones.get(id);
+      if (op) lineas.push({ concepto: `${prefijo}${NOMBRE_TIPO[op.tipo]}: ${op.nombre}`, costo: costoOpcion(op, factor, cat) });
     }
-  }
+    for (const linea of piso.ingredientes ?? []) {
+      const ing = cat.ingredientes.get(linea.ingredienteId);
+      if (ing) {
+        lineas.push({
+          concepto: `${prefijo}${ing.nombre} (${mostrarCantidad(linea.cantidad, ing.unidad)})`,
+          costo: costoIngrediente(ing, linea.cantidad),
+        });
+      }
+    }
+  });
+  // La base de cartón y el gas van una vez por torta, tenga los pisos que tenga.
   for (const gasto of cat.gastos.values()) {
     if (gasto.porTorta) lineas.push({ concepto: gasto.nombre, costo: gasto.precio });
   }
@@ -104,17 +119,16 @@ export function calcularTorta(
 
 /** Cuánto de cada ingrediente se usa en la torta, ya escalado. */
 export function consumo(sel: Seleccion, cat: Catalogo): Map<number, number> {
-  const factor = cat.tamanos.get(sel.tamanoId)?.factor ?? 1;
   const total = new Map<number, number>();
-  for (const id of idsElegidos(sel)) {
-    const op = cat.opciones.get(id);
-    if (op?.modo !== 'receta') continue;
-    for (const linea of op.receta) {
-      total.set(linea.ingredienteId, (total.get(linea.ingredienteId) ?? 0) + linea.cantidad * factor);
+  const sumar = (id: number, cantidad: number) => total.set(id, (total.get(id) ?? 0) + cantidad);
+  for (const piso of pisosDe(sel)) {
+    const factor = cat.tamanos.get(piso.tamanoId)?.factor ?? 1;
+    for (const id of idsDelPiso(piso)) {
+      const op = cat.opciones.get(id);
+      if (op?.modo !== 'receta') continue;
+      for (const linea of op.receta) sumar(linea.ingredienteId, linea.cantidad * factor);
     }
-  }
-  for (const linea of sel.ingredientes ?? []) {
-    total.set(linea.ingredienteId, (total.get(linea.ingredienteId) ?? 0) + linea.cantidad);
+    for (const linea of piso.ingredientes ?? []) sumar(linea.ingredienteId, linea.cantidad);
   }
   return total;
 }

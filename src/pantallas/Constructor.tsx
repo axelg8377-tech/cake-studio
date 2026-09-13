@@ -3,17 +3,19 @@ import { useState } from 'react';
 import { Ayuda, Aviso, NoEncontrado, Pantalla } from '../componentes/ui';
 import { eliminarTorta, guardarTorta, leerCatalogo } from '../datos/catalogo';
 import { db } from '../db';
-import { calcularTorta, costoIngrediente, costoOpcion, faltantesDeStock, type Catalogo } from '../lib/costos';
+import { calcularTorta, costoIngrediente, costoOpcion, faltantesDeStock, pisosDe, type Catalogo } from '../lib/costos';
 import { fechaCorta, leerNumero, leerPesos, pesos, pesosConSigno } from '../lib/formato';
 import { ir } from '../lib/ruta';
 import { mostrarCantidad } from '../lib/unidades';
-import { CATEGORIAS_INGREDIENTE, type Config, type Opcion, type Seleccion, type TipoOpcion, type Torta } from '../tipos';
+import { CATEGORIAS_INGREDIENTE, type Config, type Opcion, type Seleccion, type Tamano, type TipoOpcion, type Torta } from '../tipos';
 
 type Elegidos = Record<TipoOpcion, number[]>;
 type Libre = { ingredienteId: number; cantidad: string };
-type Modo = 'opciones' | 'ingredientes';
+/** Lo que se está armando en un piso. El piso 1 es el de abajo. */
+type Piso = { tamanoId?: number; elegidos: Elegidos; libres: Libre[] };
 
 const NADA: Elegidos = { masa: [], relleno: [], cobertura: [], decoracion: [], extra: [] };
+const PISO_VACIO: Piso = { elegidos: NADA, libres: [] };
 
 const PASOS: { tipo: TipoOpcion; titulo: string; varias: boolean }[] = [
   { tipo: 'masa', titulo: 'Masa', varias: false },
@@ -35,14 +37,18 @@ export default function Constructor({ id }: { id?: number }) {
   return <Armador cat={cat} config={config} inicial={torta ?? undefined} />;
 }
 
-function elegidosDe(sel: Seleccion): Elegidos {
+function pisoDe(sel: Seleccion): Piso {
   const uno = (id?: number) => (id === undefined ? [] : [id]);
   return {
-    masa: uno(sel.masaId),
-    relleno: sel.rellenoIds,
-    cobertura: uno(sel.coberturaId),
-    decoracion: uno(sel.decoracionId),
-    extra: sel.extraIds,
+    tamanoId: sel.tamanoId,
+    elegidos: {
+      masa: uno(sel.masaId),
+      relleno: sel.rellenoIds,
+      cobertura: uno(sel.coberturaId),
+      decoracion: uno(sel.decoracionId),
+      extra: sel.extraIds,
+    },
+    libres: sel.ingredientes?.map((l) => ({ ingredienteId: l.ingredienteId, cantidad: texto(l.cantidad) })) ?? [],
   };
 }
 
@@ -52,12 +58,8 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
   const margenDefecto = config?.margenDefecto ?? 50;
   const [nombre, setNombre] = useState(inicial?.nombre ?? '');
   const [clienteId, setClienteId] = useState<number | undefined>(inicial?.clienteId);
-  const [modo, setModo] = useState<Modo>(inicial?.seleccion.ingredientes?.length ? 'ingredientes' : 'opciones');
-  const [tamanoId, setTamanoId] = useState<number | undefined>(inicial?.seleccion.tamanoId);
-  const [elegidos, setElegidos] = useState<Elegidos>(inicial ? elegidosDe(inicial.seleccion) : NADA);
-  const [libres, setLibres] = useState<Libre[]>(
-    inicial?.seleccion.ingredientes?.map((l) => ({ ingredienteId: l.ingredienteId, cantidad: texto(l.cantidad) })) ?? [],
-  );
+  const [pisos, setPisos] = useState<Piso[]>(inicial ? pisosDe(inicial.seleccion).map(pisoDe) : [PISO_VACIO]);
+  const [activo, setActivo] = useState(0);
   const [margen, setMargen] = useState(texto(inicial?.snapshot.margen ?? margenDefecto));
   const [precioFinal, setPrecioFinal] = useState(
     inicial && inicial.snapshot.precioFinal !== inicial.snapshot.precioSugerido ? String(inicial.snapshot.precioFinal) : '',
@@ -67,8 +69,7 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
   const [guardando, setGuardando] = useState(false);
 
   const tamanos = [...cat.tamanos.values()];
-  const tamano = (tamanoId !== undefined && cat.tamanos.get(tamanoId)) || tamanos[0];
-  if (!tamano) {
+  if (tamanos.length === 0) {
     return (
       <Pantalla titulo="Armar torta">
         <Aviso alerta>
@@ -78,57 +79,81 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
     );
   }
 
+  const tamanoDe = (p: Piso): Tamano => (p.tamanoId !== undefined && cat.tamanos.get(p.tamanoId)) || tamanos[0];
   // Si una opción o un ingrediente se borró desde otra pantalla, deja de contar sin romper nada.
-  const vivos = (tipo: TipoOpcion) => elegidos[tipo].filter((x) => cat.opciones.has(x));
-  const librosValidos = libres
-    .filter((l) => cat.ingredientes.has(l.ingredienteId) && (leerNumero(l.cantidad) ?? 0) > 0)
-    .map((l) => ({ ingredienteId: l.ingredienteId, cantidad: leerNumero(l.cantidad)! }));
-  const porOpciones = modo === 'opciones';
-  const sel: Seleccion = {
-    tamanoId: tamano.id!,
-    masaId: porOpciones ? vivos('masa')[0] : undefined,
-    rellenoIds: porOpciones ? vivos('relleno') : [],
-    coberturaId: porOpciones ? vivos('cobertura')[0] : undefined,
-    decoracionId: porOpciones ? vivos('decoracion')[0] : undefined,
-    extraIds: vivos('extra'),
-    ingredientes: porOpciones ? undefined : librosValidos,
+  const vivos = (p: Piso, tipo: TipoOpcion) => p.elegidos[tipo].filter((x) => cat.opciones.has(x));
+  const validos = (p: Piso) =>
+    p.libres
+      .filter((l) => cat.ingredientes.has(l.ingredienteId) && (leerNumero(l.cantidad) ?? 0) > 0)
+      .map((l) => ({ ingredienteId: l.ingredienteId, cantidad: leerNumero(l.cantidad)! }));
+  const seleccionDe = (p: Piso): Seleccion => {
+    const ingredientes = validos(p);
+    return {
+      tamanoId: tamanoDe(p).id!,
+      masaId: vivos(p, 'masa')[0],
+      rellenoIds: vivos(p, 'relleno'),
+      coberturaId: vivos(p, 'cobertura')[0],
+      decoracionId: vivos(p, 'decoracion')[0],
+      extraIds: vivos(p, 'extra'),
+      ingredientes: ingredientes.length > 0 ? ingredientes : undefined,
+    };
   };
+  const [abajo, ...arriba] = pisos.map(seleccionDe);
+  const sel: Seleccion = { ...abajo, pisos: arriba.length > 0 ? arriba : undefined };
+
+  const piso = pisos[Math.min(activo, pisos.length - 1)];
+  const tamano = tamanoDe(piso);
   const margenNum = leerNumero(margen) ?? 0;
   const final = leerPesos(precioFinal) ?? undefined;
   const s = calcularTorta(sel, cat, margenNum, final);
   const faltantes = faltantesDeStock(sel, cat);
-  const hayElegidas = porOpciones
-    ? PASOS.some((p) => p.tipo !== 'extra' && vivos(p.tipo).length > 0)
-    : librosValidos.length > 0;
-  const pasosVisibles = porOpciones ? PASOS : PASOS.filter((p) => p.tipo === 'extra');
+  const hayElegidas = pisos.some(
+    (p) => PASOS.some((paso) => paso.tipo !== 'extra' && vivos(p, paso.tipo).length > 0) || validos(p).length > 0,
+  );
+
+  function cambiarPiso(cambio: (p: Piso) => Piso) {
+    setMensaje(null);
+    setPisos((prev) => prev.map((p, i) => (i === Math.min(activo, prev.length - 1) ? cambio(p) : p)));
+  }
 
   function elegir(op: Opcion, varias: boolean) {
-    setMensaje(null);
-    setElegidos((prev) => {
-      const actual = prev[op.tipo];
+    cambiarPiso((p) => {
+      const actual = p.elegidos[op.tipo];
       const esta = actual.includes(op.id!);
       const nuevo = varias ? (esta ? actual.filter((i) => i !== op.id) : [...actual, op.id!]) : esta ? [] : [op.id!];
-      return { ...prev, [op.tipo]: nuevo };
+      return { ...p, elegidos: { ...p.elegidos, [op.tipo]: nuevo } };
     });
   }
 
   function alternarIngrediente(ingredienteId: number) {
+    cambiarPiso((p) => ({
+      ...p,
+      libres: p.libres.some((l) => l.ingredienteId === ingredienteId)
+        ? p.libres.filter((l) => l.ingredienteId !== ingredienteId)
+        : [...p.libres, { ingredienteId, cantidad: '' }],
+    }));
+  }
+
+  function agregarPiso() {
+    // El piso nuevo arranca un tamaño más chico que el de abajo, que es lo más común.
+    const i = tamanos.findIndex((t) => t.id === tamanoDe(pisos[pisos.length - 1]).id);
+    const tamanoId = tamanos[Math.max(0, i - 1)].id;
+    setPisos((prev) => [...prev, { ...PISO_VACIO, tamanoId }]);
+    setActivo(pisos.length);
     setMensaje(null);
-    setLibres((prev) =>
-      prev.some((l) => l.ingredienteId === ingredienteId)
-        ? prev.filter((l) => l.ingredienteId !== ingredienteId)
-        : [...prev, { ingredienteId, cantidad: '' }],
-    );
+  }
+
+  function quitarPiso() {
+    if (pisos.length < 2) return;
+    if (!confirm(`¿Quitar el piso ${activo + 1}? Se pierde lo que elegiste en ese piso.`)) return;
+    setPisos((prev) => prev.filter((_, i) => i !== activo));
+    setActivo(Math.max(0, activo - 1));
   }
 
   async function guardar(estado: Torta['estado'], comoNueva = false) {
     setError(null);
     setMensaje(null);
-    if (!hayElegidas) {
-      return setError(
-        porOpciones ? 'Elegí al menos una masa, un relleno o una cobertura.' : 'Tocá al menos un ingrediente y escribí cuánto lleva.',
-      );
-    }
+    if (!hayElegidas) return setError('Elegí al menos una masa, un relleno, una cobertura o un ingrediente con su cantidad.');
     const primeraVezHecha = estado === 'realizada' && (comoNueva || inicial?.estado !== 'realizada');
     if (primeraVezHecha && !confirm('Se descuenta del stock lo que lleva esta torta. ¿Marcarla como hecha?')) return;
     setGuardando(true);
@@ -152,8 +177,8 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
       );
       setNombre('');
       setClienteId(undefined);
-      setElegidos(NADA);
-      setLibres([]);
+      setPisos([PISO_VACIO]);
+      setActivo(0);
       setPrecioFinal('');
     } catch {
       setError('No se pudo guardar. Probá de nuevo.');
@@ -175,6 +200,8 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
     ...CATEGORIAS_INGREDIENTE,
     ...new Set(ingredientes.map((i) => i.categoria).filter((c) => !(CATEGORIAS_INGREDIENTE as readonly string[]).includes(c))),
   ];
+  const variosPisos = pisos.length > 1;
+  const nombrePiso = variosPisos ? ` · piso ${activo + 1}` : '';
 
   return (
     <Pantalla
@@ -189,25 +216,22 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
       }
     >
       {!inicial && (
-        <Ayuda id="tortas">
-          <p>Hay dos formas de armar una torta:</p>
-          <ul>
-            <li>
-              <b>Elegir opciones:</b> masas, rellenos y coberturas que ya tienen su receta (se cargan en Más › Opciones).
-              El costo se ajusta solo al tamaño.
-            </li>
-            <li>
-              <b>Elegir ingredientes:</b> tocás lo que lleva y escribís cuánto. Sirve para una torta distinta, sin cargar
-              nada antes.
-            </li>
-          </ul>
+        <Ayuda id="tortas-v2">
           <p>
-            Abajo ves siempre el <b>costo</b>, la <b>ganancia</b> y el <b>precio</b>. "Ganancia sobre el costo" 50% quiere
-            decir que cobrás el costo más la mitad. La base de cartón y el gas se suman solos (Más › Gastos).
+            Tocá la <b>masa</b>, los <b>rellenos</b> y la <b>cobertura</b>. Son las opciones con receta de Más › Opciones: el
+            costo se ajusta solo al tamaño.
           </p>
           <p>
-            <b>Guardar borrador</b> no toca nada. <b>Ya la hice</b> descuenta del stock lo que usó. Las tortas guardadas
-            aparecen abajo: tocá una para abrirla y cambiarla.
+            Si lleva algo que no está en las opciones, abrí <b>Ingredientes sueltos</b> y escribí cuánto usás. Eso se suma tal
+            cual, sin ajustar por tamaño.
+          </p>
+          <p>
+            ¿Es de <b>varios pisos</b>? Tocá <b>+ Agregar piso</b>: cada piso tiene su tamaño y lo suyo. El piso 1 es el de
+            abajo.
+          </p>
+          <p>
+            Abajo ves siempre el <b>costo</b>, la <b>ganancia</b> y el <b>precio</b>. <b>Guardar borrador</b> no toca nada.{' '}
+            <b>Ya la hice</b> descuenta del stock lo que usó.
           </p>
         </Ayuda>
       )}
@@ -256,19 +280,31 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
       )}
 
       <section className="paso">
-        <h2 className="rotulo">Cómo la armás</h2>
+        <h2 className="rotulo">Pisos</h2>
         <div className="chips">
-          <button type="button" className="chip" aria-pressed={porOpciones} onClick={() => setModo('opciones')}>
-            Elegir opciones
-          </button>
-          <button type="button" className="chip" aria-pressed={!porOpciones} onClick={() => setModo('ingredientes')}>
-            Elegir ingredientes
+          {pisos.map((p, i) => (
+            <button key={i} type="button" className="chip" aria-pressed={i === activo} onClick={() => setActivo(i)}>
+              <span>Piso {i + 1}</span>
+              <small>{tamanoDe(p).nombre}</small>
+            </button>
+          ))}
+          <button type="button" className="chip chip-agregar" onClick={agregarPiso}>
+            + Agregar piso
           </button>
         </div>
+        {variosPisos && (
+          <p className="ayuda">
+            Estás armando el <b>piso {activo + 1}</b>
+            {activo === 0 ? ' (el de abajo)' : ''}.{' '}
+            <button type="button" className="enlace" onClick={quitarPiso}>
+              Quitar este piso
+            </button>
+          </p>
+        )}
       </section>
 
       <section className="paso">
-        <h2 className="rotulo">Tamaño</h2>
+        <h2 className="rotulo">Tamaño{nombrePiso}</h2>
         <div className="chips">
           {tamanos.map((t) => (
             <button
@@ -276,130 +312,124 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
               type="button"
               className="chip"
               aria-pressed={t.id === tamano.id}
-              onClick={() => setTamanoId(t.id)}
+              onClick={() => cambiarPiso((p) => ({ ...p, tamanoId: t.id }))}
             >
               {t.nombre}
             </button>
           ))}
         </div>
-        {!porOpciones && <p className="ayuda">Con ingredientes, el tamaño queda anotado; las cantidades son las que escribas.</p>}
       </section>
 
-      {!porOpciones && (
-        <section className="paso">
-          <h2 className="rotulo">
-            Ingredientes <small>· tocá los que lleva</small>
-          </h2>
-          {ingredientes.length === 0 && (
-            <p className="vacio">
-              Todavía no hay ingredientes. <a href="#/ingredientes/nuevo">Agregar</a>
-            </p>
-          )}
-          {categorias.map((categoria) => {
-            const deCategoria = ingredientes.filter((i) => i.categoria === categoria);
-            if (deCategoria.length === 0) return null;
-            return (
-              <div key={categoria} className="paso">
-                <span className="subrotulo">{categoria}</span>
-                <div className="chips">
-                  {deCategoria.map((ing) => (
-                    <button
-                      key={ing.id}
-                      type="button"
-                      className="chip"
-                      aria-pressed={libres.some((l) => l.ingredienteId === ing.id)}
-                      onClick={() => alternarIngrediente(ing.id!)}
-                    >
-                      <span>{ing.nombre}</span>
-                      <small>
-                        {pesos(ing.precio)} / {mostrarCantidad(ing.cantidad, ing.unidad)}
-                      </small>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      )}
-
-      {!porOpciones && libres.length > 0 && (
-        <section className="bloque">
-          <h2>Cuánto lleva</h2>
-          {libres.map((l, i) => {
-            const ing = cat.ingredientes.get(l.ingredienteId);
-            if (!ing) return null;
-            const n = leerNumero(l.cantidad);
-            return (
-              <div key={l.ingredienteId} className="linea-libre">
-                <div className="linea-libre-cab">
-                  <label htmlFor={`libre-${l.ingredienteId}`}>{ing.nombre}</label>
-                  <span>{pesos(n && n > 0 ? costoIngrediente(ing, n) : 0)}</span>
-                </div>
-                <div className="linea-libre-campos">
-                  <input
-                    id={`libre-${l.ingredienteId}`}
-                    inputMode="decimal"
-                    placeholder="Cantidad"
-                    autoFocus={!inicial && i === libres.length - 1}
-                    value={l.cantidad}
-                    onChange={(e) =>
-                      setLibres((prev) =>
-                        prev.map((x) => (x.ingredienteId === l.ingredienteId ? { ...x, cantidad: e.target.value } : x)),
-                      )
-                    }
-                  />
-                  <span className="unidad">{ing.unidad}</span>
-                  <button
-                    type="button"
-                    className="boton-quitar"
-                    aria-label={`Quitar ${ing.nombre}`}
-                    onClick={() => alternarIngrediente(ing.id!)}
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-          <p className="ayuda">En gramos (g), mililitros (ml) o unidades (u). 4 huevos = 4.</p>
-        </section>
-      )}
-
-      {pasosVisibles.map(({ tipo, titulo, varias }) => {
+      {PASOS.map(({ tipo, titulo, varias }) => {
         const opciones = [...cat.opciones.values()]
           .filter((o) => o.tipo === tipo)
           .sort((a, b) => a.nombre.localeCompare(b.nombre));
-        const marcadas = vivos(tipo);
+        const marcadas = vivos(piso, tipo);
         return (
           <section key={tipo} className="paso">
             <h2 className="rotulo">
               {titulo}
               {varias && <small> · una o varias</small>}
             </h2>
-            {opciones.length === 0 ? (
-              <p className="vacio">
-                Todavía no hay opciones de este tipo. <a href="#/mas/opciones/nuevo">Agregar</a>
-              </p>
-            ) : (
-              <div className="chips">
-                {opciones.map((op) => (
-                  <button
-                    key={op.id}
-                    type="button"
-                    className="chip"
-                    aria-pressed={marcadas.includes(op.id!)}
-                    onClick={() => elegir(op, varias)}
-                  >
-                    <span>{op.nombre}</span>
-                    <small>{pesos(costoOpcion(op, tamano.factor, cat))}</small>
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="chips">
+              {opciones.map((op) => (
+                <button
+                  key={op.id}
+                  type="button"
+                  className="chip"
+                  aria-pressed={marcadas.includes(op.id!)}
+                  onClick={() => elegir(op, varias)}
+                >
+                  <span>{op.nombre}</span>
+                  <small>{pesos(costoOpcion(op, tamano.factor, cat))}</small>
+                </button>
+              ))}
+              <a className="chip chip-agregar" href={`#/mas/opciones/nuevo`}>
+                + Nueva
+              </a>
+            </div>
           </section>
         );
       })}
+
+      <details className="bloque" open={piso.libres.length > 0}>
+        <summary>
+          <b>Ingredientes sueltos{nombrePiso}</b>
+          {piso.libres.length > 0 && <small> · {piso.libres.length} elegidos</small>}
+        </summary>
+        <p className="ayuda">
+          Para lo que no está en las opciones de arriba. Tocá el ingrediente y escribí cuánto lleva: se suma tal cual, sin
+          ajustar por tamaño. Si lo vas a usar seguido, conviene crear una opción con esa receta.
+        </p>
+        {ingredientes.length === 0 && (
+          <p className="vacio">
+            Todavía no hay ingredientes. <a href="#/ingredientes/nuevo">Agregar</a>
+          </p>
+        )}
+        {categorias.map((categoria) => {
+          const deCategoria = ingredientes.filter((i) => i.categoria === categoria);
+          if (deCategoria.length === 0) return null;
+          return (
+            <div key={categoria} className="paso">
+              <span className="subrotulo">{categoria}</span>
+              <div className="chips">
+                {deCategoria.map((ing) => (
+                  <button
+                    key={ing.id}
+                    type="button"
+                    className="chip"
+                    aria-pressed={piso.libres.some((l) => l.ingredienteId === ing.id)}
+                    onClick={() => alternarIngrediente(ing.id!)}
+                  >
+                    <span>{ing.nombre}</span>
+                    <small>
+                      {pesos(ing.precio)} / {mostrarCantidad(ing.cantidad, ing.unidad)}
+                    </small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {piso.libres.map((l, i) => {
+          const ing = cat.ingredientes.get(l.ingredienteId);
+          if (!ing) return null;
+          const n = leerNumero(l.cantidad);
+          return (
+            <div key={l.ingredienteId} className="linea-libre">
+              <div className="linea-libre-cab">
+                <label htmlFor={`libre-${l.ingredienteId}`}>{ing.nombre}</label>
+                <span>{pesos(n && n > 0 ? costoIngrediente(ing, n) : 0)}</span>
+              </div>
+              <div className="linea-libre-campos">
+                <input
+                  id={`libre-${l.ingredienteId}`}
+                  inputMode="decimal"
+                  placeholder="Cantidad"
+                  autoFocus={!inicial && i === piso.libres.length - 1 && l.cantidad === ''}
+                  value={l.cantidad}
+                  onChange={(e) =>
+                    cambiarPiso((p) => ({
+                      ...p,
+                      libres: p.libres.map((x) => (x.ingredienteId === l.ingredienteId ? { ...x, cantidad: e.target.value } : x)),
+                    }))
+                  }
+                />
+                <span className="unidad">{ing.unidad}</span>
+                <button
+                  type="button"
+                  className="boton-quitar"
+                  aria-label={`Quitar ${ing.nombre}`}
+                  onClick={() => alternarIngrediente(ing.id!)}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {piso.libres.length > 0 && <p className="ayuda">En gramos (g), mililitros (ml) o unidades (u). 4 huevos = 4.</p>}
+      </details>
 
       {faltantes.length > 0 && (
         <Aviso alerta>
@@ -447,7 +477,7 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
                 ))}
                 <tr>
                   <td>
-                    <b>Total ({tamano.nombre})</b>
+                    <b>Total ({variosPisos ? `${pisos.length} pisos` : tamano.nombre})</b>
                   </td>
                   <td className="num">
                     <b>{pesos(s.costo)}</b>
@@ -525,6 +555,7 @@ function Armador({ cat, config, inicial }: { cat: Catalogo; config: Config | nul
                     <b>{t.nombre}</b>
                     <small>
                       {fechaCorta(t.fecha)} · {t.estado === 'realizada' ? 'hecha' : 'borrador'}
+                      {t.seleccion.pisos?.length ? ` · ${t.seleccion.pisos.length + 1} pisos` : ''}
                     </small>
                   </span>
                   <b>{pesos(t.snapshot.precioFinal)}</b>

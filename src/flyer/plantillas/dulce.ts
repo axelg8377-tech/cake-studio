@@ -1,6 +1,6 @@
 import { logoTorta } from '../logo';
 import { encajar } from '../qrMarca';
-import { ajustar, escapar, estrella, feston, formatoPrecio, fuenteFace, partir, pie, SANS, SERIF } from '../svg';
+import { ajustar, escapar, estrella, feston, formatoPrecio, fotoEncuadrada, fuenteFace, partir, pie, SANS, SERIF } from '../svg';
 import { ALTO, ANCHO, type DatosFlyer, type RecursosFlyer } from './elegante';
 
 const GUION = "'Guion', 'Great Vibes', 'Brush Script MT', cursive";
@@ -31,7 +31,13 @@ export function flyerDulce(d: DatosFlyer, r: RecursosFlyer): string {
   const flor = { cx: 350, cy: Math.round((fin + 1080) / 2) + 10 };
   const contorno = feston(flor.cx, flor.cy, radio);
   const fotoSvg = r.fotoDataUri
-    ? `<image href="${r.fotoDataUri}" x="${flor.cx - radio}" y="${flor.cy - radio}" width="${radio * 2}" height="${radio * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#dl-flor)"/>`
+    ? fotoEncuadrada(
+        r.fotoDataUri,
+        r.fotoTam,
+        { x: flor.cx - radio, y: flor.cy - radio, ancho: radio * 2, alto: radio * 2 },
+        'dl-flor',
+        r.encuadre,
+      )
     : `<path d="${contorno}" fill="${CREMA_DORADA}"/>` +
       encajar(logoTorta(acento, CREMA_DORADA), flor.cx - radio / 2, flor.cy - radio / 2, radio);
   // El sello pisa el borde de la flor abajo a la derecha y termina antes de la columna de datos (x=690).

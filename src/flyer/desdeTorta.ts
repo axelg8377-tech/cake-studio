@@ -1,25 +1,26 @@
-import { calcularTorta, costoOpcion, type Catalogo } from '../lib/costos';
-import type { Opcion, TipoOpcion, Torta } from '../tipos';
+import { calcularTorta, costoOpcion, pisosDe, type Catalogo } from '../lib/costos';
+import type { Opcion, Seleccion, TipoOpcion, Torta } from '../tipos';
 import type { DatosCarta } from './plantillas/carta';
 import type { DatosFlyer } from './plantillas/elegante';
 
 /** Lo de una torta guardada que puede ver el cliente. Del snapshot sale solo el precio final. */
 export function flyerDeTorta(t: Torta, cat: Catalogo): Omit<DatosFlyer, 'negocio'> {
+  // Con varios pisos se juntan los nombres sin repetir: "Chocolate + Vainilla".
+  const pisos = pisosDe(t.seleccion);
   const nombres = (ids: (number | undefined)[]) =>
-    ids
-      .map((id) => (id === undefined ? undefined : cat.opciones.get(id)?.nombre))
-      .filter(Boolean)
-      .join(' + ');
-  const s = t.seleccion;
+    [...new Set(ids.map((id) => (id === undefined ? undefined : cat.opciones.get(id)?.nombre)).filter(Boolean))].join(' + ');
+  const de = (f: (p: Seleccion) => (number | undefined)[]) => nombres(pisos.flatMap(f));
+  const rellenos = new Set(pisos.flatMap((p) => p.rellenoIds));
+  const tamanos = pisos.map((p) => cat.tamanos.get(p.tamanoId)?.nombre).filter(Boolean);
   return {
     nombre: t.nombre,
-    tamano: cat.tamanos.get(s.tamanoId)?.nombre ?? '',
+    tamano: pisos.length > 1 ? `${pisos.length} pisos · ${tamanos.join(' + ')}` : (tamanos[0] ?? ''),
     detalle: [
-      { etiqueta: 'Masa', valor: nombres([s.masaId]) },
-      { etiqueta: s.rellenoIds.length > 1 ? 'Rellenos' : 'Relleno', valor: nombres(s.rellenoIds) },
-      { etiqueta: 'Cobertura', valor: nombres([s.coberturaId]) },
-      { etiqueta: 'Decoración', valor: nombres([s.decoracionId]) },
-      { etiqueta: 'Extras', valor: nombres(s.extraIds) },
+      { etiqueta: pisos.length > 1 ? 'Masas' : 'Masa', valor: de((p) => [p.masaId]) },
+      { etiqueta: rellenos.size > 1 ? 'Rellenos' : 'Relleno', valor: de((p) => p.rellenoIds) },
+      { etiqueta: 'Cobertura', valor: de((p) => [p.coberturaId]) },
+      { etiqueta: 'Decoración', valor: de((p) => [p.decoracionId]) },
+      { etiqueta: 'Extras', valor: de((p) => p.extraIds) },
     ],
     precio: t.snapshot.precioFinal,
   };

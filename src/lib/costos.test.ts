@@ -141,6 +141,20 @@ describe('torta completa', () => {
     expect(consumo(libre, cat).get(1)).toBe(500);
   });
 
+  it('varios pisos: cada uno con lo suyo, la base de cartón una sola vez', () => {
+    const dosPisos: Seleccion = { ...sel, pisos: [{ tamanoId: 1, masaId: 10, rellenoIds: [], extraIds: [] }] };
+    const s = calcularTorta(dosPisos, cat, 50);
+    // 3500 + 3000 del piso 1, 3500 del piso 2, 1500 de la base
+    expect(s.costo).toBeCloseTo(11500);
+    expect(s.lineas.map((l) => l.concepto)).toEqual([
+      'Piso 1 · Masa: Vainilla',
+      'Piso 1 · Relleno: DDL',
+      'Piso 2 · Masa: Vainilla',
+      'Base de cartón',
+    ]);
+    expect(consumo(dosPisos, cat).get(1)).toBe(1500);
+  });
+
   it('avisa de stock insuficiente solo donde hay stock cargado', () => {
     expect(consumo(sel, cat).get(1)).toBe(750);
     expect(faltantesDeStock(sel, cat)).toEqual([{ ingredienteId: 1, nombre: 'Harina', necesita: 750, hay: 600 }]);

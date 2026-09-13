@@ -1,6 +1,6 @@
 import { logoTorta } from '../logo';
 import { encajar } from '../qrMarca';
-import { ajustar, escapar, formatoPrecio, fuenteFace, partir, pie, SANS, SERIF, type Negocio } from '../svg';
+import { ajustar, escapar, formatoPrecio, fotoEncuadrada, fuenteFace, partir, pie, SANS, SERIF, type Negocio } from '../svg';
 import { ALTO, ANCHO, type RecursosFlyer } from './elegante';
 
 /** La carta de precios. Tampoco tiene costo ni ganancia: solo lo que se le cobra al cliente. */
@@ -45,7 +45,7 @@ export function flyerCarta(d: DatosCarta, r: RecursosFlyer): string {
   );
   const foto = { x: 640, y: 360, ancho: 330, alto: 380 };
   const fotoSvg = r.fotoDataUri
-    ? `<image href="${r.fotoDataUri}" x="${foto.x}" y="${foto.y}" width="${foto.ancho}" height="${foto.alto}" preserveAspectRatio="xMidYMid slice" clip-path="url(#cr-foto)"/>`
+    ? fotoEncuadrada(r.fotoDataUri, r.fotoTam, foto, 'cr-foto', r.encuadre)
     : `<rect x="${foto.x}" y="${foto.y}" width="${foto.ancho}" height="${foto.alto}" rx="28" fill="${detalle}"/>` +
       encajar(logoTorta(papel, detalle), foto.x + 65, foto.y + 90, 200);
 

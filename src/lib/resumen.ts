@@ -1,7 +1,7 @@
 /** Las cuentas de Inicio y de Revisar precios. Puras, como costos.ts: se prueban sin navegador. */
 import { ultimosCambios } from '../datos/ingredientes';
 import type { Ingrediente, PrecioHistorial, Torta } from '../tipos';
-import { calcularTorta, idsElegidos, variacion, type Catalogo } from './costos';
+import { calcularTorta, idsElegidos, pisosDe, variacion, type Catalogo } from './costos';
 
 export const diaHecha = (t: Torta) => t.hecha ?? t.fecha;
 
@@ -57,9 +57,9 @@ export function revisarPrecios(tortas: Torta[], cat: Catalogo): Revision[] {
     .map((torta) => {
       const sel = torta.seleccion;
       const incompleta =
-        !cat.tamanos.has(sel.tamanoId) ||
-        idsElegidos(sel).some((id) => !cat.opciones.has(id)) ||
-        (sel.ingredientes ?? []).some((l) => !cat.ingredientes.has(l.ingredienteId));
+        pisosDe(sel).some(
+          (p) => !cat.tamanos.has(p.tamanoId) || (p.ingredientes ?? []).some((l) => !cat.ingredientes.has(l.ingredienteId)),
+        ) || idsElegidos(sel).some((id) => !cat.opciones.has(id));
       const hoy = calcularTorta(sel, cat, torta.snapshot.margen);
       const costoAntes = torta.snapshot.costo;
       const { abs, pct } = variacion(costoAntes, hoy.costo);

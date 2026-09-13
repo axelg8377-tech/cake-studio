@@ -9,7 +9,7 @@ import { flyerCarta } from '../flyer/plantillas/carta';
 import { flyerDulce } from '../flyer/plantillas/dulce';
 import { ALTO, ANCHO, flyerElegante } from '../flyer/plantillas/elegante';
 import { svgQrMarca } from '../flyer/qrMarca';
-import { PALETA_PAPEL, PALETA_ROSA } from '../flyer/svg';
+import { ENCUADRE_CENTRADO, PALETA_PAPEL, PALETA_ROSA, type Encuadre } from '../flyer/svg';
 import type { Catalogo } from '../lib/costos';
 import { bajar, blobADataUri, compartirOBajar, fuenteDataUri, svgAPng } from '../lib/exportar';
 import { fechaCorta, leerPesos, pesos } from '../lib/formato';
@@ -57,6 +57,8 @@ function Editor({
   const [datos, setDatos] = useState(() => (inicial ? flyerDeTorta(inicial, cat) : SIN_TORTA));
   const [imagenId, setImagenId] = useState(() => (imagenes.find((i) => i.principal) ?? imagenes[0])?.id ?? null);
   const [foto, setFoto] = useState<string | null>(null);
+  const [fotoTam, setFotoTam] = useState<{ ancho: number; alto: number } | null>(null);
+  const [encuadre, setEncuadre] = useState<Encuadre>(ENCUADRE_CENTRADO);
   const [negocio, setNegocio] = useState(config?.negocio ?? { nombre: '', telefono: '', instagram: '', frase: '' });
   const [titulo, setTitulo] = useState('Tortas');
   const [preciosCarta, setPreciosCarta] = useState<Record<number, string>>({});
@@ -72,9 +74,22 @@ function Editor({
 
   const blob = imagenes.find((i) => i.id === imagenId)?.blob;
   useEffect(() => {
+    setEncuadre(ENCUADRE_CENTRADO);
     if (!blob) return setFoto(null);
     let vigente = true;
-    blobADataUri(blob).then((uri) => vigente && setFoto(uri));
+    // El tamaño real hace falta para correr la foto: sin él queda centrada, como antes.
+    const tam = createImageBitmap(blob)
+      .then((b) => {
+        const t = { ancho: b.width, alto: b.height };
+        b.close();
+        return t;
+      })
+      .catch(() => null);
+    Promise.all([blobADataUri(blob), tam]).then(([uri, t]) => {
+      if (!vigente) return;
+      setFoto(uri);
+      setFotoTam(t);
+    });
     return () => {
       vigente = false;
     };
@@ -89,6 +104,8 @@ function Editor({
       paleta,
       qrSvg: svgQrMarca(url ?? 'https://wa.me/', { tinta: paleta.tinta, papel: paleta.papel }),
       fotoDataUri: foto,
+      fotoTam,
+      encuadre,
       fuenteTitulos: fuentes.titulos,
       fuenteGuion: fuentes.guion,
     };
@@ -98,7 +115,7 @@ function Editor({
       return flyerCarta({ ...carta, tamanos, titulo, negocio: neg }, recursos);
     }
     return (plantilla === 'dulce' ? flyerDulce : flyerElegante)({ ...datos, negocio: neg }, recursos);
-  }, [plantilla, url, foto, fuentes, negocio, carta, preciosCarta, titulo, datos]);
+  }, [plantilla, url, foto, fotoTam, encuadre, fuentes, negocio, carta, preciosCarta, titulo, datos]);
 
   function cambiarPlantilla(p: Plantilla) {
     setPlantilla(p);
@@ -351,6 +368,52 @@ function Editor({
         alt="Vista previa del flyer"
         src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
       />
+      {foto && fotoTam && (
+        <section className="bloque encuadre">
+          <h2>Acomodar la foto</h2>
+          <p className="ayuda">Mové las barras y mirá cómo queda arriba.</p>
+          <label className="campo" htmlFor="encuadre-zoom">
+            Agrandar
+            <input
+              id="encuadre-zoom"
+              type="range"
+              min={1}
+              max={3}
+              step={0.05}
+              value={encuadre.zoom}
+              onChange={(e) => setEncuadre({ ...encuadre, zoom: Number(e.target.value) })}
+            />
+          </label>
+          {/* La barra a la derecha corre la foto a la derecha: por eso el valor va invertido. */}
+          <label className="campo" htmlFor="encuadre-x">
+            Correr a los costados
+            <input
+              id="encuadre-x"
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={1 - encuadre.x}
+              onChange={(e) => setEncuadre({ ...encuadre, x: 1 - Number(e.target.value) })}
+            />
+          </label>
+          <label className="campo" htmlFor="encuadre-y">
+            Subir o bajar
+            <input
+              id="encuadre-y"
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={encuadre.y}
+              onChange={(e) => setEncuadre({ ...encuadre, y: Number(e.target.value) })}
+            />
+          </label>
+          <button className="boton boton-chico boton-secundario" type="button" onClick={() => setEncuadre(ENCUADRE_CENTRADO)}>
+            Volver a centrar
+          </button>
+        </section>
+      )}
       <div className="accesos">
         <button className="boton" type="button" disabled={!url || ocupado} onClick={() => exportar(true)}>
           Enviar por WhatsApp

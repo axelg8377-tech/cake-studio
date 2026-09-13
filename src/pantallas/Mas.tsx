@@ -27,10 +27,57 @@ const GRUPOS = [
   },
 ];
 
+declare const __COMPILADA__: string;
+
+/** Espera a que el service worker nuevo quede activo, con techo: sin internet o sin versión nueva no traba. */
+function esperarActivo(sw: ServiceWorker | null | undefined, ms = 10_000): Promise<void> {
+  return new Promise((listo) => {
+    if (!sw || sw.state === 'activated') return listo();
+    const techo = setTimeout(listo, ms);
+    sw.addEventListener('statechange', () => {
+      if (sw.state === 'activated' || sw.state === 'redundant') {
+        clearTimeout(techo);
+        listo();
+      }
+    });
+  });
+}
+
+async function actualizarApp(): Promise<void> {
+  try {
+    const registro = await navigator.serviceWorker?.getRegistration();
+    await registro?.update();
+    await esperarActivo(registro?.installing ?? registro?.waiting);
+  } catch {
+    // Sin internet: se recarga igual con lo que ya está guardado.
+  }
+  location.reload();
+}
+
 export default function Mas() {
   const [ayudas, setAyudas] = useState(false);
+  const [actualizando, setActualizando] = useState(false);
   return (
     <Pantalla titulo="Más">
+      <section className="bloque">
+        <h2>Versión de la app</h2>
+        <p className="ayuda">
+          Versión del {__COMPILADA__}
+          <br />
+          Si te avisamos de un cambio y no lo ves, tocá el botón: busca la versión nueva y vuelve a abrir la app.
+        </p>
+        <button
+          className="boton"
+          type="button"
+          disabled={actualizando}
+          onClick={() => {
+            setActualizando(true);
+            actualizarApp();
+          }}
+        >
+          {actualizando ? 'Buscando…' : 'Buscar actualización'}
+        </button>
+      </section>
       {GRUPOS.map((g) => (
         <section key={g.titulo} className="grupo-lista">
           <h2>{g.titulo}</h2>

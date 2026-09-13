@@ -196,6 +196,28 @@ Recorte avisado al CEO al arrancar: esta sesión T12–T16; **F1, T17 y T18 qued
 - **No verificado:** Android real, texto grande del sistema, tablet horizontal.
 - **Falta:** commit + push de T17 con OK del CEO. Sesión 5: F1 y T18.
 
+## Sesión 5 — 2026-09-13 (Opus) · correcciones del CEO antes de F1
+
+El CEO pidió 4 correcciones antes de la IA. F1 y T18 siguen pendientes.
+
+- **Foto del flyer acomodable:** `fotoEncuadrada()` en `flyer/svg.ts` (zoom 1–3, correr a los costados, subir o bajar),
+  con el tamaño real de la foto (`createImageBitmap`). Las 3 plantillas la usan. Barras en Flyer debajo de la vista
+  previa + "Volver a centrar". El encuadre vuelve al centro al cambiar de foto y no se guarda. Test: `svg.test.ts`.
+- **Constructor sin elegir modo:** opciones arriba (cada paso con "+ Nueva") y abajo "Ingredientes sueltos"
+  (desplegable). Se pueden mezclar: `calcularTorta` ya sumaba las dos cosas.
+- **Pisos:** `Seleccion.pisos?` = pisos de arriba; el objeto raíz es el piso 1 (abajo). `pisosDe()` en costos.
+  Cada piso con tamaño, opciones e ingredientes; gastos por torta una sola vez; conceptos "Piso N · …".
+  Flyer: "2 pisos · 20 cm + 15 cm" y nombres sin repetir. Revisar precios mira el tamaño de todos los pisos.
+  Tortas viejas no tienen `pisos`: se leen igual. Backup: `seleccion` sigue validando como objeto.
+- **Buscar actualización** en Más: `registration.update()`, espera al SW nuevo (techo 10 s) y recarga. Muestra la
+  fecha de compilación (`__COMPILADA__` en `vite.config.ts`).
+- Verificación: `npm test` 84/84 · build limpio. Chromium 412 px: 2 pisos → costo por piso correcto, base y gas una vez,
+  "Total (2 pisos)". Más muestra versión y botón.
+- **No verificado:** barras de la foto en el navegador de prueba. La foto subida por agent-browser quedó con miniatura
+  vacía y "Guardando la foto…" colgado (pasa antes de llegar al código nuevo; sin diagnosticar). El cálculo del encuadre
+  está en test. **Lo revisa el CEO en el teléfono.**
+- Publicado con OK del CEO ("haz deploy").
+
 ### Decisiones tomadas en la sesión
 - `base: './'` en Vite: GitHub Pages sirve en `/<repo>/` y así no depende del nombre del repo.
 - `testTimeout` 30 s: render con sharp + jsqr tarda más de 5 s en frío. No era falla del QR.

@@ -6,6 +6,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   // Relativo: GitHub Pages sirve el sitio en /<repo>/ y así no hay que saber el nombre del repo.
   base: './',
+  // Fecha de la publicación, visible en Más: así se sabe si el teléfono ya tiene la versión nueva.
+  define: {
+    __COMPILADA__: JSON.stringify(
+      new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', dateStyle: 'short', timeStyle: 'short' }),
+    ),
+  },
   plugins: [
     react(),
     VitePWA({

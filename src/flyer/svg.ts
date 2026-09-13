@@ -50,6 +50,35 @@ export function pie(
   ].join('');
 }
 
+/** Cómo se acomoda la foto en su marco. `x` e `y` van de 0 a 1: 0,5 es centrada. `zoom` 1 = llena justo. */
+export type Encuadre = { zoom: number; x: number; y: number };
+export const ENCUADRE_CENTRADO: Encuadre = { zoom: 1, x: 0.5, y: 0.5 };
+
+type Caja = { x: number; y: number; ancho: number; alto: number };
+
+/**
+ * La foto llena la caja sin deformarse y se corre o agranda según el encuadre. Sin el tamaño real de la
+ * foto no se puede calcular cuánto sobra: queda centrada como antes.
+ */
+export function fotoEncuadrada(
+  uri: string,
+  tam: { ancho: number; alto: number } | null | undefined,
+  caja: Caja,
+  clipId: string,
+  e: Encuadre = ENCUADRE_CENTRADO,
+): string {
+  if (!tam || tam.ancho <= 0 || tam.alto <= 0) {
+    return `<image href="${uri}" x="${caja.x}" y="${caja.y}" width="${caja.ancho}" height="${caja.alto}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})"/>`;
+  }
+  const escala = Math.max(caja.ancho / tam.ancho, caja.alto / tam.alto) * Math.max(1, e.zoom);
+  const ancho = tam.ancho * escala;
+  const alto = tam.alto * escala;
+  const lim = (v: number) => Math.min(1, Math.max(0, v));
+  const x = caja.x + (caja.ancho - ancho) * lim(e.x);
+  const y = caja.y + (caja.alto - alto) * lim(e.y);
+  return `<g clip-path="url(#${clipId})"><image href="${uri}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${ancho.toFixed(1)}" height="${alto.toFixed(1)}" preserveAspectRatio="none"/></g>`;
+}
+
 /** Borde de flor de la referencia Dough Daze: un círculo con `ondas` semicírculos hacia afuera. */
 export function feston(cx: number, cy: number, radio: number, ondas = 10): string {
   const seno = Math.sin(Math.PI / ondas);

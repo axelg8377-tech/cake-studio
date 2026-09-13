@@ -263,6 +263,10 @@ fieldset.paso { padding: 0; border: 0; }
 
 /* Respuesta al tocar: cambia el color, nunca el tamaño (no mueve lo de al lado). */
 .boton, .chip, .foto-opcion, .boton-quitar, .fila, .nav-item { transition: background-color .15s ease, color .15s ease; }
+.chip-agregar { display: inline-flex; align-items: center; border-style: dashed; background: transparent; color: var(--acento); font-weight: 600; text-decoration: none; }
+.enlace { min-height: 44px; padding: 0 4px; border: 0; background: none; color: var(--acento); font: inherit; text-decoration: underline; cursor: pointer; }
+details.bloque summary { gap: 6px; }
+.encuadre input[type="range"] { min-height: 44px; padding: 0; border: 0; background: none; accent-color: var(--acento); }
 .chip:active { background: var(--linea); }
 .chip[aria-pressed="true"]:active { background: var(--suave); }
 .foto-opcion:active { background: var(--linea); }
