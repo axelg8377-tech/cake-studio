@@ -1,0 +1,759 @@
+# DESARROLLAR APLICACIÓN SIMPLE PARA GESTIÓN DE TORTAS
+
+Quiero desarrollar una aplicación **sencilla, local y práctica** para ayudar a organizar un pequeño negocio de elaboración de tortas.
+
+NO quiero sobreingeniería.
+
+El objetivo es tener una aplicación funcional, rápida y fácil de mantener. Debe funcionar principalmente de manera local y guardar los datos en una base de datos sencilla.
+
+## 1. OBJETIVO GENERAL
+
+La aplicación tendrá DOS módulos principales:
+
+### MÓDULO A — ADMINISTRACIÓN
+
+Sirve para administrar:
+
+* Ingredientes.
+* Precios de ingredientes.
+* Historial/variación de precios.
+* Gastos adicionales.
+* Imágenes disponibles para los flyers.
+* Información básica necesaria para calcular el costo de una torta.
+
+### MÓDULO B — GENERADOR PARA CLIENTES
+
+Permite seleccionar los ingredientes/características de una torta, calcular el precio final y generar una **ficha/flyer visual y elegante para enviar al cliente**, preferentemente como imagen o PDF.
+
+NO debe llamarse "presupuesto".
+
+La finalidad es mostrar de manera atractiva qué incluye la torta y cuánto cuesta.
+
+---
+
+# 2. TECNOLOGÍA
+
+Mantener la arquitectura extremadamente sencilla.
+
+Preferencias:
+
+* Frontend: React + TypeScript. 
+* Vite.   opcional debes eligir skill para eligir solo es ilustrativo
+* Tailwind CSS.
+* Base de datos local: SQLite.   opcional debes eligir skill para eligir solo es ilustrativo
+* Backend/local API únicamente si realmente hace falta.
+* Evitar Firebase si no es necesario.
+* Evitar autenticación.
+* Evitar sistemas multiusuario.
+* Evitar servicios externos innecesarios.
+* Evitar dependencias pesadas.
+
+La aplicación debe poder ejecutarse localmente.
+
+La prioridad es:
+
+**simplicidad > escalabilidad > arquitectura sofisticada.**
+
+No crear capas, servicios o abstracciones que no sean necesarias.
+
+---
+
+# 3. MÓDULO ADMINISTRACIÓN
+
+Crear un panel sencillo con estas secciones:
+
+## 3.1 Ingredientes
+
+Permitir:
+
+* Crear ingrediente.
+* Editar ingrediente.
+* Eliminar ingrediente.
+* Ver ingredientes.
+* Buscar ingredientes.
+
+Cada ingrediente debería tener como mínimo:
+
+* Nombre.
+* Categoría.
+* Unidad de medida.
+* Precio actual.
+* Cantidad correspondiente al precio.
+* Fecha de actualización.
+* Notas opcionales.
+
+Ejemplos:
+
+* Harina.
+* Azúcar.
+* Chocolate.
+* Dulce de leche.
+* Crema.
+* Huevos.
+* Frutillas.
+* Nueces.
+* Colorante.
+* Buttercream.
+
+Las categorías pueden ser:
+
+* Masas.
+* Rellenos.
+* Coberturas.
+* Decoración.
+* Frutas.
+* Otros.
+
+---
+
+# 4. VARIACIÓN DE PRECIOS
+
+Esta es una función importante.
+
+Cuando se actualice el precio de un ingrediente, NO sobrescribir simplemente el precio anterior.
+
+Guardar un pequeño historial.
+
+Ejemplo:
+
+Chocolate:
+
+* Precio anterior: $5.000
+* Precio nuevo: $7.000
+* Variación: +$2.000
+* Variación porcentual: +40%
+* Fecha del cambio.
+
+La aplicación debe poder mostrar:
+
+### PRECIO ACTUAL
+
+$7.000
+
+### PRECIO ANTERIOR
+
+$5.000
+
+### VARIACIÓN
+
++$2.000
+
+### VARIACIÓN %
+
++40%
+
+También debe existir un historial sencillo para consultar cómo fue cambiando el precio.
+
+No hace falta construir gráficos complejos inicialmente.
+
+Una tabla sencilla es suficiente.
+
+---
+
+# 5. COSTO POR UNIDAD
+
+La aplicación debe permitir definir correctamente qué representa cada precio.
+
+Por ejemplo:
+
+Harina:
+
+* Precio: $2.000
+* Cantidad: 1 kg
+
+Entonces si una torta utiliza 500 g:
+
+Costo utilizado = $1.000.
+
+Otro ejemplo:
+
+Huevos:
+
+* Precio: $4.000
+* Cantidad: 12 unidades
+
+Si una torta utiliza 4 huevos:
+
+Costo = $1.333 aproximadamente.
+
+La aplicación debe calcular automáticamente el costo proporcional.
+
+Este sistema debe ser flexible para:
+
+* gramos.
+* kilogramos.
+* mililitros.
+* litros.
+* unidades.
+
+No hace falta crear un sistema científico de unidades. Solo resolver correctamente estos casos básicos.
+
+---
+
+# 6. GASTOS ADICIONALES
+
+Crear una sección de gastos que permita registrar cosas que no necesariamente son ingredientes.
+
+Ejemplos:
+
+* Caja.
+* Base para torta.
+* Bolsa.
+* Velas.
+* Decoración.
+* Delivery.
+* Gas.
+* Electricidad.
+* Otros.
+
+Cada gasto puede tener:
+
+* Nombre.
+* Categoría.
+* Precio.
+* Fecha.
+* Notas.
+
+También debe ser posible incluir estos gastos en el cálculo de una torta cuando corresponda.
+
+---
+
+# 7. CREACIÓN DE UNA TORTA / CÁLCULO
+
+Crear una herramienta sencilla para armar una torta.
+
+La usuaria debería poder seleccionar:
+
+### TAMAÑO
+
+Por ejemplo:
+
+* 15 cm.
+* 18 cm.
+* 20 cm.
+* 24 cm.
+* Otro.
+
+Esto debe poder modificarse desde administración.
+
+### MASA
+
+Ejemplo:
+
+* Vainilla.
+* Chocolate.
+* Red velvet.
+
+### RELLENO
+
+Ejemplo:
+
+* Dulce de leche.
+* Chocolate.
+* Crema.
+* Frutilla.
+
+### COBERTURA
+
+Ejemplo:
+
+* Buttercream.
+* Ganache.
+* Crema.
+
+### DECORACIÓN
+
+Ejemplo:
+
+* Frutas.
+* Flores.
+* Chocolate.
+* Temática.
+* Personalizada.
+
+### EXTRAS
+
+Por ejemplo:
+
+* Velas.
+* Topper.
+* Base especial.
+* Caja especial.
+* Delivery.
+
+No asumir que estas opciones son fijas.
+
+Todo debe poder ser administrado desde el módulo de administración.
+
+---
+
+# 8. PRECIO FINAL
+
+El sistema debe poder calcular:
+
+**Costo de ingredientes**
+
+*
+
+**Costos adicionales**
+
+=
+
+**Costo real de elaboración**
+
+Y después aplicar un margen/ganancia.
+
+Por ejemplo:
+
+Costo real: $12.000
+
+Margen: 50%
+
+Precio sugerido: $18.000
+
+También permitir modificar manualmente el precio final.
+
+IMPORTANTE:
+
+Diferenciar visualmente:
+
+* Costo.
+* Ganancia/margen.
+* Precio final para cliente.
+
+El cliente NO debe ver necesariamente el costo interno ni el margen.
+
+---
+
+# 9. GENERADOR DE FLYER PARA CLIENTE
+
+Este es el segundo módulo principal.
+
+Desde la pantalla de creación de torta debe existir un botón:
+
+**"Generar flyer"**
+
+Al presionarlo, se genera una presentación visual.
+
+El flyer debe poder mostrar:
+
+* Imagen principal.
+* Nombre/descripción de la torta.
+* Tamaño.
+* Masa.
+* Rellenos.
+* Cobertura.
+* Decoración.
+* Extras.
+* Precio final.
+
+Ejemplo:
+
+---
+
+[IMAGEN DE LA TORTA]
+
+### TORTA CHOCOLATE ESPECIAL
+
+20 cm
+
+Masa:
+Chocolate
+
+Relleno:
+Dulce de leche + crema
+
+Cobertura:
+Ganache
+
+Decoración:
+Frutillas y chocolate
+
+### $25.000
+
+---
+
+Debe verse como una **pieza comercial**, no como una captura del sistema administrativo.
+
+---
+
+# 10. IMÁGENES PARA EL FLYER
+
+Desde Administración debe existir una sección:
+
+**"Galería"**
+
+Permitir:
+
+* Agregar imágenes.
+* Eliminar imágenes.
+* Definir imagen principal.
+* Clasificar imágenes opcionalmente.
+
+Por ejemplo:
+
+* Tortas.
+* Decoraciones.
+* Fondos.
+* Logos.
+* Otros.
+
+Cuando se genere el flyer, se puede seleccionar una imagen de la galería.
+
+También permitir cargar varias imágenes precargadas para que la usuaria pueda elegir rápidamente.
+
+No hace falta crear un editor gráfico complejo.
+
+---
+
+# 11. DISEÑO DEL FLYER
+
+Crear inicialmente 2 o 3 plantillas simples.
+
+Por ejemplo:
+
+### PLANTILLA 1 — ELEGANTE
+
+Diseño limpio, tipografía elegante, imagen grande y pocos elementos.
+
+### PLANTILLA 2 — DULCE
+
+Más visual, cálida y relacionada con repostería.
+
+### PLANTILLA 3 — MINIMALISTA
+
+Mucho espacio, imagen protagonista y datos esenciales.
+
+La usuaria puede elegir la plantilla antes de generar el flyer.
+
+No crear un editor tipo Canva.
+
+Solo permitir cambiar:
+
+* Imagen.
+* Plantilla.
+* Nombre.
+* Información.
+* Precio.
+
+---
+
+# 12. EXPORTACIÓN
+
+El resultado debe poder:
+
+* Descargar como imagen.
+* O descargar como PDF si resulta sencillo de implementar.
+
+La prioridad es que pueda compartirlo fácilmente por WhatsApp.
+
+Si generar PNG/JPG resulta más sencillo que PDF, priorizar imagen.
+
+---
+
+# 13. HISTORIAL DE TORTAS
+
+Agregar una sección muy sencilla:
+
+**"Tortas realizadas"**
+
+Guardar:
+
+* Fecha.
+* Cliente opcional.
+* Descripción.
+* Precio.
+* Costo.
+* Ganancia.
+* Configuración utilizada.
+
+Esto permite consultar posteriormente qué se hizo.
+
+No hace falta crear un CRM.
+
+Solo un historial simple.
+
+---
+
+# 14. CLIENTES — OPCIONAL Y SIMPLE
+
+Si resulta sencillo, permitir guardar:
+
+* Nombre.
+* Teléfono.
+* Notas.
+
+Pero NO convertir esto en un sistema de gestión de clientes complejo.
+
+Debe ser una función secundaria.
+
+---
+
+# 15. DASHBOARD
+
+La pantalla inicial puede mostrar únicamente información útil:
+
+### RESUMEN
+
+* Tortas realizadas este mes.
+* Ventas del mes.
+* Costos aproximados.
+* Ganancia aproximada.
+* Ingredientes con mayores aumentos de precio.
+
+Ejemplo:
+
+**VENTAS**
+$250.000
+
+**COSTOS**
+$130.000
+
+**GANANCIA**
+$120.000
+
+Y debajo:
+
+### MAYORES AUMENTOS
+
+Chocolate +40%
+
+Crema +25%
+
+Frutilla +18%
+
+No crear un dashboard empresarial complejo.
+
+---
+
+# 16. ALERTA DE AUMENTOS
+
+Agregar una pequeña función útil:
+
+Si un ingrediente aumentó significativamente de precio, mostrarlo en administración.
+
+Por ejemplo:
+
+> Chocolate aumentó 40% desde la última actualización.
+
+Esto sirve para detectar cuándo hay que revisar los precios de las tortas.
+
+---
+
+# 17. REVISIÓN DE PRECIOS
+
+Agregar una pantalla sencilla:
+
+**"Revisar precios de tortas"**
+
+Que permita detectar si los costos cambiaron.
+
+Ejemplo:
+
+Torta Chocolate Especial
+
+Costo anterior: $10.000
+
+Costo actual: $12.500
+
+Diferencia: +$2.500
+
+Precio actual: $18.000
+
+Mostrar una advertencia:
+
+> El costo de elaboración aumentó. Conviene revisar el precio de venta.
+
+No modificar automáticamente el precio de venta.
+
+La decisión final debe ser manual.
+
+---
+
+# 18. DATOS LOCALES
+
+Todos los datos deben almacenarse localmente.
+
+No necesitamos:
+
+* Login.
+* Usuarios.
+* Roles.
+* Servidores.
+* API externa.
+* Base de datos cloud.
+* Suscripciones.
+
+La información debe persistir aunque se cierre la aplicación.
+
+Si es posible, agregar una función sencilla:
+
+### EXPORTAR DATOS
+
+Descargar una copia de seguridad.
+
+### IMPORTAR DATOS
+
+Restaurar una copia.
+
+Esto es mucho más importante que crear una arquitectura compleja.
+
+---
+
+# 19. DISEÑO DE INTERFAZ
+
+La interfaz debe estar pensada para una persona que NO es técnica.
+
+Debe ser:
+
+* Simple.
+* Visual.
+* Rápida.
+* Con botones claros.
+* Pocos campos.
+* Formularios cortos.
+* Responsive.
+
+Menú principal:
+
+**Inicio**
+
+**Ingredientes**
+
+**Gastos**
+
+**Tortas**
+
+**Generar flyer**
+
+**Galería**
+
+**Historial**
+
+**Configuración**
+
+No llenar la aplicación de opciones innecesarias.
+
+---
+
+# 20. REGLA IMPORTANTE SOBRE LA COMPLEJIDAD
+
+NO agregar funcionalidades solamente porque "podrían ser útiles".
+
+Antes de agregar una función preguntarse:
+
+1. ¿Ayuda directamente a organizar las tortas?
+2. ¿Ayuda a calcular mejor el costo?
+3. ¿Ayuda a actualizar precios?
+4. ¿Ayuda a generar el flyer?
+5. ¿Ayuda a evitar pérdida de información?
+
+Si la respuesta es NO, probablemente no debe entrar en la primera versión.
+
+---
+
+# 21. ORDEN DE DESARROLLO
+
+Desarrollar en este orden:
+
+### FASE 1
+
+Base de datos local.
+
+Ingredientes.
+
+Precios.
+
+Historial de precios.
+
+Gastos.
+
+### FASE 2
+
+Constructor de tortas.
+
+Cálculo de costos.
+
+Margen.
+
+Precio final.
+
+### FASE 3
+
+Galería de imágenes.
+
+Plantillas.
+
+Generador de flyer.
+
+Exportación.
+
+### FASE 4
+
+Historial de tortas.
+
+Dashboard sencillo.
+
+Alertas de variación de precios.
+
+### FASE 5
+
+Backup / restauración.
+
+Pulido visual.
+
+Testing.
+
+---
+
+# 22. REGLAS PARA EL DESARROLLO
+
+No quiero que conviertas este proyecto en una aplicación empresarial.
+
+Priorizar:
+
+**FUNCIONA > ES SIMPLE > ES MANTENIBLE > ES BONITA**
+
+No implementar:
+
+* Arquitectura innecesaria.
+* Microservicios.
+* Sistemas distribuidos.
+* Autenticación.
+* Roles.
+* APIs externas.
+* IA.
+* Integraciones.
+* Firebase si SQLite/local resuelve el problema.
+* Sistemas de permisos.
+* Features que no estén relacionadas con el objetivo.
+
+Primero construir una versión pequeña pero completamente funcional.
+
+Antes de agregar funcionalidades nuevas, verificar que el flujo principal funcione:
+
+**ingrediente → precio → costo → torta → precio final → flyer → exportar**
+
+Ese es el núcleo de la aplicación.
+
+# 23. CRITERIO DE ÉXITO
+
+La aplicación estará correctamente terminada cuando mi hermana pueda hacer este proceso sin necesitar conocimientos técnicos:
+
+1. Actualizar el precio de un ingrediente.
+2. Ver cuánto aumentó.
+3. Crear/seleccionar ingredientes.
+4. Armar una torta.
+5. Ver cuánto cuesta hacerla.
+6. Definir el precio de venta.
+7. Elegir una imagen.
+8. Elegir un diseño.
+9. Generar el flyer.
+10. Descargarlo.
+11. Enviarlo al cliente.
+
+Si ese flujo es rápido, claro y confiable, la aplicación cumple su objetivo.
+
+NO buscar complejidad técnica.
+
+Buscar una herramienta pequeña que realmente pueda utilizar todos los días.

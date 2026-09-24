@@ -1,0 +1,240 @@
+Sí. Y esa IA tiene sentido, pero con una condición: no la convertiría en un “asistente inteligente de repostería” que decide cosas por su cuenta. Eso te agregaría complejidad y además puede cometer errores.
+
+La usaría como una capa de interpretación y sugerencias encima de un sistema determinista.
+
+Cómo lo haría
+
+Tu hermana tendría un botón:
+
+“Crear torta con IA”
+
+Y podría hablar:
+
+“Una clienta quiere una torta de 3 kilos, con relleno de vainilla, dulce de leche y el tercero a elección. Es para cumpleaños y quiere decoración en rosa.”
+
+La IA transforma eso en una estructura:
+
+Peso: 3 kg
+
+Rellenos:
+✓ Vainilla
+✓ Dulce de leche
+⚠ Tercer relleno: pendiente de elegir
+
+Evento: Cumpleaños
+Color: Rosa
+
+Y no genera nada todavía.
+
+Tu hermana revisa:
+
+¿Está correcto?
+
+[Editar] [Aceptar]
+
+Al aceptar, recién ahí el sistema busca en tu base de datos los ingredientes/opciones correspondientes, calcula el costo y prepara el flyer.
+
+Lo importante: la IA no debería controlar el negocio
+
+Yo dividiría las responsabilidades así:
+
+IA = entiende lo que dijo la persona + propone.
+
+Aplicación = calcula y decide según datos reales.
+
+Por ejemplo, si la IA interpreta:
+
+“Chocolate”
+
+no debería inventarse un precio.
+
+La aplicación busca:
+
+Chocolate
+Precio actual: $7.000
+Stock: 1,2 kg
+
+Y calcula el costo según la cantidad utilizada.
+
+Esto es mucho más seguro.
+
+También podés aprovecharla para detectar problemas
+
+Acá sí veo una función interesante.
+
+Cuando tu hermana está armando la torta, la aplicación puede mostrar:
+
+REVISIÓN
+
+Chocolate
+
+Precio actual: $7.000/kg
+
+Última actualización: $5.000/kg
+
+Aumento: +40%
+
+Aviso: este ingrediente aumentó considerablemente. Revisá el precio de venta.
+
+Otro caso:
+
+STOCK
+
+Dulce de leche
+
+Stock aproximado: 300 g
+
+Cantidad necesaria: 500 g
+
+⚠ No alcanza el stock.
+
+Opciones:
+
+Cambiar ingrediente
+Comprar ingrediente
+Continuar igualmente
+
+La IA puede incluso ayudarte a interpretar el problema:
+
+“Para esta torta necesitás aproximadamente 500 g de dulce de leche y actualmente tenés 300 g registrados.”
+
+Pero el cálculo lo hace la aplicación, no la IA.
+
+Y hay otra función que agregaría
+“Revisar precio”
+
+Después de armar la torta:
+
+Costo actual: $18.400
+Precio de venta: $25.000
+
+La aplicación puede comparar contra la configuración anterior:
+
+Esta torta anteriormente costaba $15.200 producirla.
+Ahora cuesta $18.400.
+El costo aumentó 21%.
+
+Y sugerir:
+
+“Tu precio actual podría haber quedado desactualizado.”
+
+Incluso podría mostrar:
+
+Precio actual: $25.000
+Margen actual: 26%
+Precio sugerido según margen configurado: $30.000
+
+Pero nuevamente:
+
+SUGERIR, NO CAMBIAR AUTOMÁTICAMENTE.
+
+Para el audio
+
+Acá tampoco haría una infraestructura complicada.
+
+El flujo puede ser:
+
+Audio → transcripción → IA → estructura JSON → revisión humana
+
+Por ejemplo:
+
+{
+  "peso_kg": 3,
+  "rellenos": [
+    "vainilla",
+    "dulce de leche"
+  ],
+  "relleno_3": "a elección",
+  "evento": "cumpleaños",
+  "color": "rosa"
+}
+
+Después la aplicación toma ese JSON y hace el resto.
+
+Esto tiene una ventaja enorme: la IA no tiene acceso directo para modificar la base de datos.
+
+Incluso puede preguntar lo que falta
+
+Esto sería bastante bueno.
+
+Tu hermana dice:
+
+“Quiero una torta de 3 kilos, vainilla, dulce de leche y otro relleno.”
+
+La IA detecta:
+
+Falta definir el tercer relleno.
+
+Entonces:
+
+“¿Qué querés utilizar como tercer relleno?”
+
+Y puede mostrar:
+
+Chocolate
+Frutilla
+Crema
+Otro
+
+O simplemente:
+
+“Dejar a elección”
+
+Después tu hermana decide.
+
+La IA también puede ayudar con el flyer
+
+Una vez aprobado todo:
+
+3 kg
+Masa: chocolate
+Rellenos: vainilla + dulce de leche + frutilla
+Cobertura: buttercream
+Decoración: rosa
+Precio: $32.000
+
+La aplicación genera automáticamente el flyer.
+
+La IA no debería diseñar el flyer desde cero.
+
+Eso sería innecesario.
+
+Mejor tener 2–3 plantillas fijas y que la aplicación coloque los datos.
+
+Entonces la versión final tendría este flujo
+                 CLIENTE
+                    ↓
+             Audio / texto
+                    ↓
+                  IA
+                    ↓
+        interpreta el pedido
+                    ↓
+          propuesta estructurada
+                    ↓
+          ┌─────────────────┐
+          │ REVISAR PEDIDO  │
+          └─────────────────┘
+                    ↓
+               ACEPTAR
+                    ↓
+          ┌─────────────────┐
+          │ BASE DE DATOS   │
+          │ precios / stock │
+          └─────────────────┘
+                    ↓
+          cálculo de costos
+                    ↓
+        revisión de aumentos
+                    ↓
+          precio de venta
+                    ↓
+             GENERAR FLYER
+                    ↓
+            imagen / PDF
+                    ↓
+                WhatsApp
+
+Esto sí me parece una IA útil. No es “poner IA porque queda moderno”; reduce escritura, interpreta pedidos reales y encuentra problemas que de otro modo tu hermana tendría que revisar manualmente.
+
+Y mantendría una regla de oro para el desarrollo: si la IA falla, la aplicación sigue funcionando perfectamente sin ella. La IA tiene que ser un acelerador, no una dependencia estructural.
